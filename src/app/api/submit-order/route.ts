@@ -18,34 +18,16 @@ function formatTelegramMessage(data: OrderFormData): string {
   lines.push("─────────────────────────────────────");
   lines.push(`*Full Name:*        ${escapeMarkdown(data.customer.fullName)}`);
   lines.push(`*Mobile:*           ${escapeMarkdown(data.customer.mobileNumber)}`);
-  if (data.customer.whatsappNumber) {
-    lines.push(`*WhatsApp:*         ${escapeMarkdown(data.customer.whatsappNumber)}`);
-  }
-  if (data.customer.telegramUsername) {
-    lines.push(`*Telegram:*         ${escapeMarkdown(data.customer.telegramUsername)}`);
-  }
   lines.push(`*Email:*            ${escapeMarkdown(data.customer.email)}`);
   lines.push(`*Country:*          ${escapeMarkdown(data.customer.country)}`);
   lines.push(`*City:*             ${escapeMarkdown(data.customer.city)}`);
   lines.push(`*Address:*          ${escapeMarkdown(data.customer.shippingAddress)}`);
-  if (data.customer.postalCode) {
-    lines.push(`*Postal Code:*      ${escapeMarkdown(data.customer.postalCode)}`);
-  }
   lines.push("");
 
   lines.push("*📦 PRODUCT DETAILS*");
   lines.push("─────────────────────────────────────");
   lines.push(`*Product URL:*      ${escapeMarkdown(data.product.url)}`);
   lines.push(`*Product Name:*     ${escapeMarkdown(data.product.name)}`);
-  if (data.product.variant) {
-    lines.push(`*Variant:*          ${escapeMarkdown(data.product.variant)}`);
-  }
-  if (data.product.color) {
-    lines.push(`*Color:*            ${escapeMarkdown(data.product.color)}`);
-  }
-  if (data.product.size) {
-    lines.push(`*Size:*             ${escapeMarkdown(data.product.size)}`);
-  }
   lines.push(`*Quantity:*         ${data.product.quantity}`);
   if (data.product.notes) {
     lines.push(`*Product Notes:*    ${escapeMarkdown(data.product.notes)}`);
@@ -56,27 +38,17 @@ function formatTelegramMessage(data: OrderFormData): string {
   lines.push("─────────────────────────────────────");
   lines.push(`*Method:*           ${escapeMarkdown(data.shipping.method)}`);
   lines.push(`*Speed:*            ${escapeMarkdown(data.shipping.speed)}`);
-  if (data.shipping.notes) {
-    lines.push(`*Notes:*            ${escapeMarkdown(data.shipping.notes)}`);
-  }
   lines.push("");
 
   lines.push("*💳 PAYMENT INFORMATION*");
   lines.push("─────────────────────────────────────");
   lines.push(`*Currency:*         ${escapeMarkdown(data.payment.currency)}`);
-  lines.push(`*Budget:*           ${escapeMarkdown(data.payment.budget || "Not specified")}`);
   lines.push(`*Payment Method:*   ${escapeMarkdown(data.payment.method)}`);
   lines.push("");
-
-  if (data.additional.requests || data.additional.instructions) {
+  if (data.additional.notes) {
     lines.push("*📝 ADDITIONAL NOTES*");
     lines.push("─────────────────────────────────────");
-    if (data.additional.requests) {
-      lines.push(`*Special Requests:* ${escapeMarkdown(data.additional.requests)}`);
-    }
-    if (data.additional.instructions) {
-      lines.push(`*Extra Instr:*      ${escapeMarkdown(data.additional.instructions)}`);
-    }
+    lines.push(`${escapeMarkdown(data.additional.notes)}`);
     lines.push("");
   }
 

@@ -28,36 +28,27 @@ const defaultForm: OrderFormData = {
   customer: {
     fullName: "",
     mobileNumber: "",
-    whatsappNumber: "",
-    telegramUsername: "",
     email: "",
     country: "",
     city: "",
     shippingAddress: "",
-    postalCode: "",
   },
   product: {
     url: "",
     name: "",
-    variant: "",
-    color: "",
-    size: "",
     quantity: 1,
     notes: "",
   },
   shipping: {
     method: "",
     speed: "",
-    notes: "",
   },
   payment: {
     currency: "",
-    budget: "",
     method: "",
   },
   additional: {
-    requests: "",
-    instructions: "",
+    notes: "",
   },
 };
 
@@ -102,16 +93,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
     ? countries.find((c) => c.code === form.customer.country)?.flag || ""
     : "";
 
-  const getBudgetPlaceholder = () => {
-    if (form.payment.currency === "EGP - Egyptian Pound") {
-      return lang === "ar" ? "مثال: ٥٠٠٠ ج.م" : "e.g. 5000 EGP";
-    }
-    if (form.payment.currency === "USD - US Dollar") {
-      return lang === "ar" ? "مثال: ٢٠٠ دولار" : "e.g. 200 USD";
-    }
-    return lang === "ar" ? "مثال: ٢٠٠ دولار" : "e.g. 200 USD";
-  };
-
   const updateField = <K extends keyof OrderFormData>(
     section: K,
     field: keyof OrderFormData[K],
@@ -150,11 +131,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
       return ["product.url", "product.name"];
     }
     if (step === 3) {
-      return ["shipping.method", "shipping.speed"];
-    }
-    if (step === 4) {
-      const fields = ["payment.currency", "payment.method"];
-      return fields;
+      return ["shipping.method", "shipping.speed", "payment.currency", "payment.method"];
     }
     return [];
   };
@@ -180,7 +157,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
 
   const handleNext = () => {
     if (validateStep()) {
-      setStep((s) => Math.min(s + 1, 5));
+      setStep((s) => Math.min(s + 1, 4));
     }
   };
 
@@ -271,7 +248,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
     { num: 2, label: t("form.step2") },
     { num: 3, label: t("form.step3") },
     { num: 4, label: t("form.step4") },
-    { num: 5, label: t("form.step5") },
   ];
 
   return (
@@ -356,26 +332,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     />
                     {err("customer.mobileNumber") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.whatsapp")}</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      className="input-field"
-                      placeholder={t("placeholder.whatsapp")}
-                      value={form.customer.whatsappNumber}
-                      onChange={(e) => updateField("customer", "whatsappNumber", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.telegram")}</label>
-                    <input
-                      className="input-field"
-                      placeholder={t("placeholder.telegram")}
-                      value={form.customer.telegramUsername}
-                      onChange={(e) => updateField("customer", "telegramUsername", e.target.value)}
-                    />
-                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.email")} *</label>
                     <input
@@ -475,15 +432,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     />
                     {err("customer.shippingAddress") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.customer.postal")}</label>
-                    <input
-                      className="input-field"
-                      placeholder={t("placeholder.postal")}
-                      value={form.customer.postalCode}
-                      onChange={(e) => updateField("customer", "postalCode", e.target.value)}
-                    />
-                  </div>
+
                 </div>
                 <div className="flex justify-end mt-6 md:mt-8">
                   <button onClick={handleNext} className="btn-primary">
@@ -522,33 +471,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     />
                     {err("product.name") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.variant")}</label>
-                    <input
-                      className="input-field"
-                      placeholder={t("placeholder.variant")}
-                      value={form.product.variant}
-                      onChange={(e) => updateField("product", "variant", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.color")}</label>
-                    <input
-                      className="input-field"
-                      placeholder={t("placeholder.color")}
-                      value={form.product.color}
-                      onChange={(e) => updateField("product", "color", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.size")}</label>
-                    <input
-                      className="input-field"
-                      placeholder={t("placeholder.size")}
-                      value={form.product.size}
-                      onChange={(e) => updateField("product", "size", e.target.value)}
-                    />
-                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.qty")} *</label>
                     <input
@@ -592,7 +515,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
             {step === 3 && (
               <div className="glass rounded-2xl md:rounded-3xl p-5 md:p-10">
                 <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">
-                  {t("form.shipping.title")}
+                  {t("form.shipping.title")} &amp; {t("form.payment.title")}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   <div>
@@ -623,39 +546,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     </select>
                     {err("shipping.speed") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.shipping.notes")}</label>
-                    <textarea
-                      className="input-field"
-                      placeholder={t("placeholder.shipping_notes")}
-                      value={form.shipping.notes}
-                      onChange={(e) => updateField("shipping", "notes", e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-between mt-6 md:mt-8 gap-3">
-                  <button onClick={handlePrev} className="btn-secondary">
-                    <svg className="w-4 h-4 md:w-5 md:h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                    </svg>
-                    {t("form.back")}
-                  </button>
-                  <button onClick={handleNext} className="btn-primary">
-                    {t("form.next")}
-                    <svg className="w-4 h-4 md:w-5 md:h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {step === 4 && (
-              <div className="glass rounded-2xl md:rounded-3xl p-5 md:p-10">
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">
-                  {t("form.payment.title")}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   <div>
                     <label className="block text-sm font-medium text-text-muted mb-2">{t("form.payment.currency")} *</label>
                     <select
@@ -669,16 +559,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                       ))}
                     </select>
                     {err("payment.currency") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.payment.budget")}</label>
-                    <input
-                      inputMode="numeric"
-                      className="input-field"
-                      placeholder={getBudgetPlaceholder()}
-                      value={form.payment.budget}
-                      onChange={(e) => updateField("payment", "budget", e.target.value)}
-                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text-muted mb-2">{t("form.payment.method")} *</label>
@@ -698,24 +578,15 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                       <p className="text-text-muted text-xs mt-1">{lang === "ar" ? "اختر العملة أولاً" : "Select currency first"}</p>
                     )}
                   </div>
-                </div>
-                <div className="md:col-span-2 md:mt-5 mt-4">
-                  <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.additional.requests")}</label>
-                  <textarea
-                    className="input-field"
-                    placeholder={t("placeholder.requests")}
-                    value={form.additional.requests}
-                    onChange={(e) => updateField("additional", "requests", e.target.value)}
-                  />
-                </div>
-                <div className="md:col-span-2 mt-5">
-                  <label className="block text-sm font-medium text-text-muted mb-2">{t("form.additional.instructions")}</label>
-                  <textarea
-                    className="input-field"
-                    placeholder={t("placeholder.instructions")}
-                    value={form.additional.instructions}
-                    onChange={(e) => updateField("additional", "instructions", e.target.value)}
-                  />
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.additional.notes")}</label>
+                    <textarea
+                      className="input-field"
+                      placeholder={t("placeholder.notes")}
+                      value={form.additional.notes}
+                      onChange={(e) => updateField("additional", "notes", e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-between mt-6 md:mt-8 gap-3">
                   <button onClick={handlePrev} className="btn-secondary">
@@ -734,7 +605,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
               </div>
             )}
 
-            {step === 5 && (
+            {step === 4 && (
               <div className="glass rounded-2xl md:rounded-3xl p-5 md:p-10">
                 <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">
                   {t("form.step5")}
@@ -745,14 +616,11 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <h3 className="text-sm font-semibold text-accent-400 uppercase tracking-wider mb-3">{t("review.customer")}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div><span className="text-text-muted">{t("form.customer.name")}:</span> <span className="text-white">{form.customer.fullName}</span></div>
-                      <div><span className="text-text-muted">{t("form.customer.mobile")}:</span> <span className="text-white">{form.customer.mobileNumber}</span></div>
-                      {form.customer.whatsappNumber && <div><span className="text-text-muted">{t("form.customer.whatsapp")}:</span> <span className="text-white" dir="ltr">{form.customer.whatsappNumber}</span></div>}
-                      {form.customer.telegramUsername && <div><span className="text-text-muted">{t("form.customer.telegram")}:</span> <span className="text-white">{form.customer.telegramUsername}</span></div>}
+                      <div><span className="text-text-muted">{t("form.customer.mobile")}:</span> <span className="text-white" dir="ltr">{form.customer.mobileNumber}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.email")}:</span> <span className="text-white">{form.customer.email}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.country")}:</span> <span className="text-white">{selectedCountryFlag} {selectedCountryName}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.city")}:</span> <span className="text-white">{form.customer.city}</span></div>
                       <div className="md:col-span-2"><span className="text-text-muted">{t("form.customer.address")}:</span> <span className="text-white">{form.customer.shippingAddress}</span></div>
-                      {form.customer.postalCode && <div><span className="text-text-muted">{t("form.customer.postal")}:</span> <span className="text-white">{form.customer.postalCode}</span></div>}
                     </div>
                   </div>
 
@@ -761,9 +629,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div className="md:col-span-2"><span className="text-text-muted">{t("form.product.url")}:</span> <span className="text-white break-all text-xs md:text-sm">{form.product.url}</span></div>
                       <div className="col-span-2"><span className="text-text-muted">{t("form.product.name")}:</span> <span className="text-white">{form.product.name}</span></div>
-                      {form.product.variant && <div><span className="text-text-muted">{t("form.product.variant")}:</span> <span className="text-white">{form.product.variant}</span></div>}
-                      {form.product.color && <div><span className="text-text-muted">{t("form.product.color")}:</span> <span className="text-white">{form.product.color}</span></div>}
-                      {form.product.size && <div><span className="text-text-muted">{t("form.product.size")}:</span> <span className="text-white">{form.product.size}</span></div>}
                       <div><span className="text-text-muted">{t("form.product.qty")}:</span> <span className="text-white">{form.product.quantity}</span></div>
                       {form.product.notes && <div className="col-span-2"><span className="text-text-muted">{t("form.product.notes")}:</span> <span className="text-white">{form.product.notes}</span></div>}
                     </div>
@@ -774,7 +639,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div><span className="text-text-muted">{t("form.shipping.method")}:</span> <span className="text-white">{form.shipping.method}</span></div>
                       <div><span className="text-text-muted">{t("form.shipping.speed")}:</span> <span className="text-white">{form.shipping.speed}</span></div>
-                      {form.shipping.notes && <div className="md:col-span-2"><span className="text-text-muted">{t("form.shipping.notes")}:</span> <span className="text-white">{form.shipping.notes}</span></div>}
                     </div>
                   </div>
 
@@ -782,21 +646,14 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <h3 className="text-sm font-semibold text-accent-400 uppercase tracking-wider mb-3">{t("review.payment")}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div><span className="text-text-muted">{t("form.payment.currency")}:</span> <span className="text-white">{form.payment.currency}</span></div>
-                      <div><span className="text-text-muted">{t("form.payment.budget")}:</span> <span className="text-white">{form.payment.budget || (lang === "ar" ? "غير محدد" : "Not specified")}</span></div>
                       <div><span className="text-text-muted">{t("form.payment.method")}:</span> <span className="text-white">{form.payment.method}</span></div>
                     </div>
                   </div>
 
-                  {form.additional.requests && (
+                  {form.additional.notes && (
                     <div>
                       <h3 className="text-sm font-semibold text-accent-400 uppercase tracking-wider mb-3">{t("review.additional")}</h3>
-                      <p className="text-sm text-white">{form.additional.requests}</p>
-                    </div>
-                  )}
-                  {form.additional.instructions && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-accent-400 uppercase tracking-wider mb-3">{t("review.extra")}</h3>
-                      <p className="text-sm text-white">{form.additional.instructions}</p>
+                      <p className="text-sm text-white whitespace-pre-wrap">{form.additional.notes}</p>
                     </div>
                   )}
                 </div>

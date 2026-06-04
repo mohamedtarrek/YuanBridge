@@ -140,8 +140,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "form.payment.budget": "Estimated Budget",
     "form.payment.method": "Preferred Payment Method",
 
-    "form.additional.requests": "Special Requests",
-    "form.additional.instructions": "Extra Instructions",
+    "form.additional.notes": "Additional Notes",
 
     "form.next": "Next",
     "form.back": "Back",
@@ -405,8 +404,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "form.payment.budget": "الميزانية التقريبية",
     "form.payment.method": "طريقة الدفع المفضلة",
 
-    "form.additional.requests": "طلبات خاصة",
-    "form.additional.instructions": "تعليمات إضافية",
+    "form.additional.notes": "ملاحظات إضافية",
 
     "form.next": "التالي",
     "form.back": "رجوع",
