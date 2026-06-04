@@ -18,20 +18,13 @@ function formatTelegramMessage(data: OrderFormData): string {
   lines.push("─────────────────────────────────────");
   lines.push(`*Full Name:*        ${escapeMarkdown(data.customer.fullName)}`);
   lines.push(`*Mobile:*           ${escapeMarkdown(data.customer.mobileNumber)}`);
-  lines.push(`*Email:*            ${escapeMarkdown(data.customer.email)}`);
+  lines.push(`*WhatsApp:*         ${escapeMarkdown(data.customer.whatsappNumber)}`);
   lines.push(`*Country:*          ${escapeMarkdown(data.customer.country)}`);
-  lines.push(`*City:*             ${escapeMarkdown(data.customer.city)}`);
-  lines.push(`*Address:*          ${escapeMarkdown(data.customer.shippingAddress)}`);
   lines.push("");
 
   lines.push("*📦 PRODUCT DETAILS*");
   lines.push("─────────────────────────────────────");
   lines.push(`*Product URL:*      ${escapeMarkdown(data.product.url)}`);
-  lines.push(`*Product Name:*     ${escapeMarkdown(data.product.name)}`);
-  lines.push(`*Quantity:*         ${data.product.quantity}`);
-  if (data.product.notes) {
-    lines.push(`*Product Notes:*    ${escapeMarkdown(data.product.notes)}`);
-  }
   lines.push("");
 
   lines.push("*🚚 SHIPPING INFORMATION*");
@@ -83,7 +76,7 @@ export async function POST(request: Request) {
 
     const data: OrderFormData = await request.json();
 
-    if (!data.customer?.fullName || !data.customer?.email || !data.product?.url || !data.product?.name) {
+    if (!data.customer?.fullName || !data.customer?.mobileNumber || !data.customer?.whatsappNumber || !data.customer?.country || !data.product?.url) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400 }

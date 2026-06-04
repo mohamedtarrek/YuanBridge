@@ -11,33 +11,28 @@ interface OrderFormProps {
 }
 
 const shippingMethods = [
-  "Air Freight",
-  "Sea Freight",
-  "Express Courier (DHL, FedEx, UPS)",
-  "EMS / China Post",
+  { key: "shipping.method.air", value: "Air Freight" },
+  { key: "shipping.method.sea", value: "Sea Freight" },
+  { key: "shipping.method.express", value: "Express Courier (DHL, FedEx, UPS)" },
+  { key: "shipping.method.ems", value: "EMS / China Post" },
 ];
 
 const shippingSpeeds = [
-  "Economy (15-25 business days)",
-  "Standard (10-15 business days)",
-  "Express (5-10 business days)",
-  "Premium (3-7 business days)",
+  { key: "shipping.speed.economy", value: "Economy (15-25 business days)" },
+  { key: "shipping.speed.standard", value: "Standard (10-15 business days)" },
+  { key: "shipping.speed.express", value: "Express (5-10 business days)" },
+  { key: "shipping.speed.premium", value: "Premium (3-7 business days)" },
 ];
 
 const defaultForm: OrderFormData = {
   customer: {
     fullName: "",
     mobileNumber: "",
-    email: "",
+    whatsappNumber: "",
     country: "",
-    city: "",
-    shippingAddress: "",
   },
   product: {
     url: "",
-    name: "",
-    quantity: 1,
-    notes: "",
   },
   shipping: {
     method: "",
@@ -121,14 +116,12 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
       return [
         "customer.fullName",
         "customer.mobileNumber",
-        "customer.email",
+        "customer.whatsappNumber",
         "customer.country",
-        "customer.city",
-        "customer.shippingAddress",
       ];
     }
     if (step === 2) {
-      return ["product.url", "product.name"];
+      return ["product.url"];
     }
     if (step === 3) {
       return ["shipping.method", "shipping.speed", "payment.currency", "payment.method"];
@@ -332,18 +325,17 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     />
                     {err("customer.mobileNumber") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.email")} *</label>
+                    <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.whatsapp")} *</label>
                     <input
-                      type="email"
-                      inputMode="email"
-                      className={inputClass("customer.email")}
-                      placeholder={t("placeholder.email")}
-                      value={form.customer.email}
-                      onChange={(e) => updateField("customer", "email", e.target.value)}
+                      type="tel"
+                      inputMode="numeric"
+                      className={inputClass("customer.whatsappNumber")}
+                      placeholder={t("placeholder.whatsapp")}
+                      value={form.customer.whatsappNumber}
+                      onChange={(e) => updateField("customer", "whatsappNumber", e.target.value)}
                     />
-                    {err("customer.email") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
+                    {err("customer.whatsappNumber") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
                   </div>
                   <div ref={countryRef} className="relative">
                     <label className="block text-sm font-medium text-text-muted mb-1.5 md:mb-2">{t("form.customer.country")} *</label>
@@ -412,27 +404,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                       </div>
                     )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.customer.city")} *</label>
-                    <input
-                      className={inputClass("customer.city")}
-                      placeholder={t("placeholder.city")}
-                      value={form.customer.city}
-                      onChange={(e) => updateField("customer", "city", e.target.value)}
-                    />
-                    {err("customer.city") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.customer.address")} *</label>
-                    <textarea
-                      className={inputClass("customer.shippingAddress")}
-                      placeholder={t("placeholder.address")}
-                      value={form.customer.shippingAddress}
-                      onChange={(e) => updateField("customer", "shippingAddress", e.target.value)}
-                    />
-                    {err("customer.shippingAddress") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
-                  </div>
-
                 </div>
                 <div className="flex justify-end mt-6 md:mt-8">
                   <button onClick={handleNext} className="btn-primary">
@@ -450,8 +421,8 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                 <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">
                   {t("form.product.title")}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                  <div className="md:col-span-2">
+                <div className="grid grid-cols-1 gap-4 md:gap-5">
+                  <div>
                     <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.url")} *</label>
                     <input
                       className={inputClass("product.url")}
@@ -460,39 +431,6 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                       onChange={(e) => updateField("product", "url", e.target.value)}
                     />
                     {err("product.url") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.name")} *</label>
-                    <input
-                      className={inputClass("product.name")}
-                      placeholder={t("placeholder.product")}
-                      value={form.product.name}
-                      onChange={(e) => updateField("product", "name", e.target.value)}
-                    />
-                    {err("product.name") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.qty")} *</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      className={inputClass("product.quantity")}
-                      value={form.product.quantity}
-                      onChange={(e) =>
-                        updateField("product", "quantity", Math.max(1, parseInt(e.target.value) || 1))
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-muted mb-2">{t("form.product.notes")}</label>
-                    <textarea
-                      className="input-field"
-                      placeholder={t("placeholder.notes")}
-                      value={form.product.notes}
-                      onChange={(e) => updateField("product", "notes", e.target.value)}
-                    />
                   </div>
                 </div>
                 <div className="flex justify-between mt-6 md:mt-8 gap-3">
@@ -527,7 +465,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     >
                       <option value="">{t("placeholder.select")}</option>
                       {shippingMethods.map((m) => (
-                        <option key={m} value={m}>{m}</option>
+                        <option key={m.value} value={m.value}>{t(m.key)}</option>
                       ))}
                     </select>
                     {err("shipping.method") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
@@ -541,7 +479,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     >
                       <option value="">{t("placeholder.select")}</option>
                       {shippingSpeeds.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s.value} value={s.value}>{t(s.key)}</option>
                       ))}
                     </select>
                     {err("shipping.speed") && <p className="text-red-400 text-xs mt-1">{t("form.required")}</p>}
@@ -617,20 +555,15 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div><span className="text-text-muted">{t("form.customer.name")}:</span> <span className="text-white">{form.customer.fullName}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.mobile")}:</span> <span className="text-white" dir="ltr">{form.customer.mobileNumber}</span></div>
-                      <div><span className="text-text-muted">{t("form.customer.email")}:</span> <span className="text-white">{form.customer.email}</span></div>
+                      <div><span className="text-text-muted">{t("form.customer.whatsapp")}:</span> <span className="text-white" dir="ltr">{form.customer.whatsappNumber}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.country")}:</span> <span className="text-white">{selectedCountryFlag} {selectedCountryName}</span></div>
-                      <div><span className="text-text-muted">{t("form.customer.city")}:</span> <span className="text-white">{form.customer.city}</span></div>
-                      <div className="md:col-span-2"><span className="text-text-muted">{t("form.customer.address")}:</span> <span className="text-white">{form.customer.shippingAddress}</span></div>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-semibold text-accent-400 uppercase tracking-wider mb-3">{t("review.product")}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
-                      <div className="md:col-span-2"><span className="text-text-muted">{t("form.product.url")}:</span> <span className="text-white break-all text-xs md:text-sm">{form.product.url}</span></div>
-                      <div className="col-span-2"><span className="text-text-muted">{t("form.product.name")}:</span> <span className="text-white">{form.product.name}</span></div>
-                      <div><span className="text-text-muted">{t("form.product.qty")}:</span> <span className="text-white">{form.product.quantity}</span></div>
-                      {form.product.notes && <div className="col-span-2"><span className="text-text-muted">{t("form.product.notes")}:</span> <span className="text-white">{form.product.notes}</span></div>}
+                    <div className="grid grid-cols-1 gap-2 md:gap-3 text-sm">
+                      <div><span className="text-text-muted">{t("form.product.url")}:</span> <span className="text-white break-all text-xs md:text-sm">{form.product.url}</span></div>
                     </div>
                   </div>
 

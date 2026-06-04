@@ -2,16 +2,11 @@ export interface OrderFormData {
   customer: {
     fullName: string;
     mobileNumber: string;
-    email: string;
+    whatsappNumber: string;
     country: string;
-    city: string;
-    shippingAddress: string;
   };
   product: {
     url: string;
-    name: string;
-    quantity: number;
-    notes: string;
   };
   shipping: {
     method: string;
