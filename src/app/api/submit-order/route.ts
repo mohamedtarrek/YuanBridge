@@ -1,10 +1,9 @@
+export const runtime = "edge";
+
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getIp } from "@/lib/utils";
 import type { OrderFormData } from "@/types";
-
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
 
 function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
@@ -101,6 +100,9 @@ export async function POST(request: Request) {
         { status: 429 }
       );
     }
+
+    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
 
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
       return NextResponse.json(

@@ -31,6 +31,18 @@ export const metadata: Metadata = {
     description:
       "Professional purchasing service for Chinese marketplaces. We buy for you, handle CNY payment, and ship worldwide.",
     type: "website",
+    locale: "en_US",
+    siteName: "YuanBridge",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YuanBridge – Your Bridge to Chinese Shopping",
+    description:
+      "Professional purchasing service for Chinese marketplaces. We buy for you, handle CNY payment, and ship worldwide.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

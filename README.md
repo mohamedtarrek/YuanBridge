@@ -12,6 +12,7 @@ YuanBridge is a professional purchasing service that helps customers buy product
 - **Anti-spam Protection** — IP-based rate limiting
 - **Responsive Design** — Fully mobile responsive
 - **SEO Optimized** — Proper metadata and Open Graph tags
+- **Arabic Support** — Full RTL Arabic translation with language toggle
 - **Modern Tech Stack** — Next.js 16, TypeScript, Tailwind CSS v4, Framer Motion
 
 ## Tech Stack
@@ -22,7 +23,7 @@ YuanBridge is a professional purchasing service that helps customers buy product
 | TypeScript | Type safety |
 | Tailwind CSS v4 | Utility-first styling |
 | Framer Motion | Animations |
-| Railway | Deployment platform |
+| Vercel | Deployment platform |
 
 ## Getting Started
 
@@ -42,9 +43,9 @@ cd YuanBridge
 npm install
 
 # Copy environment variables
-cp .env.example .env
+cp .env.example .env.local
 
-# Edit .env with your Telegram bot credentials:
+# Edit .env.local with your Telegram bot credentials:
 # TELEGRAM_BOT_TOKEN=your_bot_token
 # TELEGRAM_CHAT_ID=your_chat_id
 ```
@@ -71,45 +72,65 @@ npm start
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot API token from @BotFather | Yes |
 | `TELEGRAM_CHAT_ID` | Telegram chat ID to receive order notifications | Yes |
 
-## Deployment to Railway
+## Deployment to Vercel
 
-### Automatic Deployment
+### One-Click Deploy
 
 1. Push your code to a GitHub repository
-2. Go to [Railway.app](https://railway.app) and create a new project
-3. Select **Deploy from GitHub repo**
-4. Connect your repository
-5. Railway will automatically detect the Dockerfile and deploy
+2. Go to [Vercel](https://vercel.com/new)
+3. Import your GitHub repository
+4. Add the following environment variables:
+   - `TELEGRAM_BOT_TOKEN` — Your Telegram bot token
+   - `TELEGRAM_CHAT_ID` — Your Telegram chat ID
+5. Click **Deploy**
 
-### Manual Configuration
+Vercel automatically detects Next.js and applies optimal settings.
 
-If automatic detection fails:
+### Manual Deploy via Vercel CLI
 
-1. Create a new project on Railway
-2. Choose **Empty Project**
-3. Add a new service → **GitHub Repo**
-4. Railway will use the `Dockerfile` in the root directory
-5. Add the following environment variables in Railway dashboard:
-   - `TELEGRAM_BOT_TOKEN`
-   - `TELEGRAM_CHAT_ID`
-6. Deploy
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-### Environment Variables on Railway
+# Deploy
+vercel --prod
+```
 
-Go to your project dashboard → **Variables** and add:
+### Custom Domain
 
-| Key | Value |
-|-----|-------|
-| `TELEGRAM_BOT_TOKEN` | Your Telegram bot token |
-| `TELEGRAM_CHAT_ID` | Your Telegram chat ID |
-| `NODE_ENV` | `production` |
+1. Go to your project on [Vercel Dashboard](https://vercel.com)
+2. Navigate to **Settings > Domains**
+3. Add your custom domain and follow DNS configuration instructions
+
+## GitHub Integration
+
+### Automatic Deployments
+
+Once your repository is connected to Vercel, every push to the `main` branch triggers an automatic production deployment. Pull request previews are generated automatically.
+
+### GitHub Actions CI
+
+The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
+
+- Runs on every push and pull request to `main`
+- Installs dependencies
+- Runs the production build
+- Reports any build failures
+
+## Performance Optimizations
+
+- **Edge Runtime** — API route runs on Vercel Edge for fast cold starts (sub-50ms)
+- **Image Optimization** — Next.js Image component configured for AVIF/WebP
+- **Font Optimization** — Inter font loaded via `next/font` with `swap` display
+- **Efficient Animations** — Canvas-based star background, CSS gradient overlays
+- **Metadata** — Full Open Graph and Twitter Card support
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── api/submit-order/route.ts   # Telegram order submission API
+│   ├── api/submit-order/route.ts   # Telegram order submission API (Edge)
 │   ├── order/page.tsx              # Order form page
 │   ├── success/page.tsx            # Success page
 │   ├── globals.css                 # Global styles
@@ -127,6 +148,7 @@ src/
 │   ├── Contact.tsx                 # Contact methods
 │   └── OrderForm.tsx               # Multi-step order form
 ├── lib/
+│   ├── i18n/                       # Internationalization
 │   ├── rate-limit.ts               # Rate limiting utility
 │   └── utils.ts                    # Helper functions
 └── types/
