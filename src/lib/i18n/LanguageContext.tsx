@@ -4,6 +4,12 @@ import { createContext, useContext, useState, useCallback, useEffect } from "rea
 import type { Language } from "./translations";
 import { translations } from "./translations";
 
+const ARAB_COUNTRIES = new Set([
+  "SA", "AE", "QA", "KW", "BH", "OM", "YE", "IQ", "JO", "LB",
+  "PS", "SY", "EG", "SD", "LY", "TN", "DZ", "MA", "MR", "SO",
+  "DJ", "KM",
+]);
+
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
@@ -20,7 +26,25 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("yb_lang") as Language | null;
     if (stored === "en" || stored === "ar") {
       setLangState(stored);
+      return;
     }
+
+    fetch("https://ip-api.com/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        const detectedLang: Language =
+          data.countryCode && ARAB_COUNTRIES.has(data.countryCode) ? "ar" : "en";
+        setLangState(detectedLang);
+        localStorage.setItem("yb_lang", detectedLang);
+        document.documentElement.dir = detectedLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = detectedLang;
+      })
+      .catch(() => {
+        const browserLang = navigator.language?.slice(0, 2);
+        if (browserLang === "ar") {
+          setLangState("ar");
+        }
+      });
   }, []);
 
   const setLang = useCallback((newLang: Language) => {
