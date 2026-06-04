@@ -746,7 +746,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
                       <div><span className="text-text-muted">{t("form.customer.name")}:</span> <span className="text-white">{form.customer.fullName}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.mobile")}:</span> <span className="text-white">{form.customer.mobileNumber}</span></div>
-                      {form.customer.whatsappNumber && <div><span className="text-text-muted">{t("form.customer.whatsapp")}:</span> <span className="text-white">{form.customer.whatsappNumber}</span></div>}
+                      {form.customer.whatsappNumber && <div><span className="text-text-muted">{t("form.customer.whatsapp")}:</span> <span className="text-white" dir="ltr">{form.customer.whatsappNumber}</span></div>}
                       {form.customer.telegramUsername && <div><span className="text-text-muted">{t("form.customer.telegram")}:</span> <span className="text-white">{form.customer.telegramUsername}</span></div>}
                       <div><span className="text-text-muted">{t("form.customer.email")}:</span> <span className="text-white">{form.customer.email}</span></div>
                       <div><span className="text-text-muted">{t("form.customer.country")}:</span> <span className="text-white">{selectedCountryFlag} {selectedCountryName}</span></div>

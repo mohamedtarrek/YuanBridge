@@ -47,7 +47,7 @@ export default function Contact() {
               </svg>
             </div>
             <h3 className="text-lg md:text-xl font-bold text-white mb-1 md:mb-2">WhatsApp</h3>
-            <p className="text-text-muted text-sm md:text-base">+20 101 980 8766</p>
+            <p className="text-text-muted text-sm md:text-base" dir="ltr">+20 101 980 8766</p>
             <div className="mt-3 md:mt-4 inline-flex items-center gap-2 text-xs md:text-sm text-green-400 font-medium">
               <span>{t("contact.cta.title")}</span>
               <svg className="w-4 h-4 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
