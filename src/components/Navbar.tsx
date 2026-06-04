@@ -71,30 +71,32 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="md:hidden flex items-center gap-2">
+        <div className="md:hidden flex items-center gap-1">
           <button
             onClick={() => setLang(lang === "en" ? "ar" : "en")}
-            className="px-2.5 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider border border-primary-500/30 text-primary-300 hover:bg-primary-500/10 transition-all"
+            className="min-touch rounded-lg text-xs font-semibold uppercase tracking-wider border border-primary-500/30 text-primary-300 hover:bg-primary-500/10 transition-all px-3"
           >
             {lang === "en" ? "AR" : "EN"}
           </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="relative w-6 h-5 flex flex-col justify-between"
+            className="min-touch relative"
             aria-label="Toggle menu"
           >
-            <motion.span
-              animate={mobileOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-              className="block h-0.5 w-full bg-white rounded-full transition-colors"
-            />
-            <motion.span
-              animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="block h-0.5 w-full bg-white rounded-full"
-            />
-            <motion.span
-              animate={mobileOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-              className="block h-0.5 w-full bg-white rounded-full"
-            />
+            <div className="w-5 h-4 flex flex-col justify-between">
+              <motion.span
+                animate={mobileOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                className="block h-0.5 w-full bg-white rounded-full transition-colors origin-center"
+              />
+              <motion.span
+                animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
+                className="block h-0.5 w-full bg-white rounded-full"
+              />
+              <motion.span
+                animate={mobileOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                className="block h-0.5 w-full bg-white rounded-full origin-center"
+              />
+            </div>
           </button>
         </div>
       </div>
@@ -107,13 +109,13 @@ export default function Navbar() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden glass-strong border-t border-border overflow-hidden"
           >
-            <div className="px-4 py-6 flex flex-col gap-4">
+            <div className="px-4 py-4 flex flex-col gap-1">
               {navLinkKeys.map((link) => (
                 <a
                   key={link.key}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-text-muted hover:text-white transition-colors py-2"
+                  className="text-text-muted hover:text-white transition-colors min-touch justify-start px-3 rounded-lg hover:bg-white/5"
                 >
                   {t(link.key)}
                 </a>
@@ -121,7 +123,7 @@ export default function Navbar() {
               <Link
                 href="/order"
                 onClick={() => setMobileOpen(false)}
-                className="btn-primary text-sm text-center mt-2"
+                className="btn-primary text-sm text-center mt-3"
               >
                 {t("nav.start")}
               </Link>

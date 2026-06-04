@@ -81,11 +81,11 @@ export default function FAQ() {
           <span className="text-base font-semibold text-accent-400 uppercase tracking-widest">
             {t("faq.badge")}
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold mt-3 md:mt-4 mb-3 md:mb-4">
             {t("faq.title1")}{" "}
             <span className="gradient-text">{t("faq.title2")}</span>
           </h2>
-          <p className="text-text-muted max-w-3xl mx-auto text-xl">
+          <p className="text-text-muted max-w-3xl mx-auto text-base md:text-xl">
             {t("faq.desc")}
           </p>
         </motion.div>

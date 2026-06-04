@@ -58,10 +58,10 @@ function StepCard({
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.15 }}
-      className="relative flex gap-6 md:gap-8"
+      className="relative flex gap-4 md:gap-8"
     >
       <div className="flex flex-col items-center">
-        <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-xl shrink-0">
+        <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-base md:text-xl shrink-0">
           {step.number}
         </div>
         {index < stepKeys.length - 1 && (
@@ -69,13 +69,13 @@ function StepCard({
         )}
       </div>
 
-      <div className="pb-12 flex-1">
-        <div className="glass rounded-2xl p-6 md:p-8 glow-card">
-          <div className="w-12 h-12 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-300 mb-4">
+      <div className="pb-8 md:pb-12 flex-1">
+        <div className="glass rounded-2xl p-5 md:p-8 glow-card">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-300 mb-3 md:mb-4">
             {stepIcons[index]}
           </div>
-          <h3 className="text-2xl font-semibold text-white mb-3">{t(step.titleKey)}</h3>
-          <p className="text-text-muted text-lg leading-relaxed">{t(step.descKey)}</p>
+          <h3 className="text-lg md:text-2xl font-semibold text-white mb-2 md:mb-3">{t(step.titleKey)}</h3>
+          <p className="text-sm md:text-lg text-text-muted leading-relaxed">{t(step.descKey)}</p>
         </div>
       </div>
     </motion.div>
@@ -100,11 +100,11 @@ export default function HowItWorks() {
           <span className="text-base font-semibold text-accent-400 uppercase tracking-widest">
             {t("how.badge")}
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold mt-3 md:mt-4 mb-3 md:mb-4">
             {t("how.title1")}{" "}
             <span className="gradient-text">{t("how.title2")}</span>
           </h2>
-          <p className="text-text-muted max-w-2xl mx-auto text-lg">
+          <p className="text-text-muted max-w-2xl mx-auto text-sm md:text-lg">
             {t("how.desc")}
           </p>
         </motion.div>

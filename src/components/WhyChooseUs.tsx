@@ -64,11 +64,11 @@ export default function WhyChooseUs() {
           <span className="text-base font-semibold text-accent-400 uppercase tracking-widest">
             {t("why.badge")}
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold mt-3 md:mt-4 mb-3 md:mb-4">
             {t("why.title1")}{" "}
             <span className="gradient-text">{t("why.title2")}</span>
           </h2>
-          <p className="text-text-muted max-w-3xl mx-auto text-xl">
+          <p className="text-text-muted max-w-3xl mx-auto text-sm md:text-xl">
             {t("why.desc")}
           </p>
         </motion.div>
@@ -80,15 +80,15 @@ export default function WhyChooseUs() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="glass rounded-2xl p-8 glow-card group cursor-default"
+              className="glass rounded-2xl p-5 md:p-8 glow-card group cursor-default"
             >
-              <div className="w-14 h-14 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-300 mb-5 group-hover:scale-110 transition-transform duration-300">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-300 mb-3 md:mb-5 group-hover:scale-110 transition-transform duration-300">
                 {featureIcons[index]}
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">
+              <h3 className="text-base md:text-xl font-semibold text-white mb-2 md:mb-3">
                 {t(feat.titleKey)}
               </h3>
-              <p className="text-text-muted text-base leading-relaxed">
+              <p className="text-sm md:text-base text-text-muted leading-relaxed">
                 {t(feat.descKey)}
               </p>
             </motion.div>

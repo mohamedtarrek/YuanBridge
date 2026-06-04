@@ -82,11 +82,11 @@ export default function Reviews() {
           <span className="text-sm font-semibold text-accent-400 uppercase tracking-widest">
             Customer Reviews
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-4">
+          <h2 className="text-2xl md:text-4xl font-bold mt-3 md:mt-4 mb-3 md:mb-4">
             What Our{" "}
             <span className="gradient-text">Customers Say</span>
           </h2>
-          <p className="text-text-muted max-w-2xl mx-auto text-lg">
+          <p className="text-text-muted max-w-2xl mx-auto text-sm md:text-lg">
             Trusted by buyers from around the world.
           </p>
         </motion.div>
@@ -98,7 +98,7 @@ export default function Reviews() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="glass rounded-2xl p-8 glow-card"
+              className="glass rounded-2xl p-5 md:p-8 glow-card"
             >
               <StarRating rating={review.rating} />
               <p className="text-text-muted text-sm leading-relaxed mt-4 mb-6">

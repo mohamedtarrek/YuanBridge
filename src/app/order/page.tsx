@@ -14,17 +14,17 @@ export default function OrderPage() {
     <>
       <Navbar />
       <main className="flex-1">
-        <div className="relative pt-20 pb-8 px-4 text-center">
+        <div className="relative pt-16 md:pt-20 pb-6 md:pb-8 px-4 text-center">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.1),transparent_50%)]" />
           <div className="relative">
-            <span className="text-base font-semibold text-accent-400 uppercase tracking-widest">
+            <span className="text-sm md:text-base font-semibold text-accent-400 uppercase tracking-widest">
               New Order
             </span>
-            <h1 className="text-4xl md:text-6xl font-bold mt-4 mb-6">
+            <h1 className="text-3xl md:text-6xl font-bold mt-3 md:mt-4 mb-4 md:mb-6">
               Place Your{" "}
               <span className="gradient-text">Purchase Order</span>
             </h1>
-            <p className="text-text-muted max-w-2xl mx-auto text-xl">
+            <p className="text-text-muted max-w-2xl mx-auto text-base md:text-xl">
               Fill in the details below and we&apos;ll take care of the rest.
               Our team will review your order and contact you within 24 hours.
             </p>

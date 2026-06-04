@@ -22,7 +22,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass text-base text-text-muted mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm md:text-base text-text-muted mb-6 md:mb-10">
             <span className="w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
             {t("hero.badge")}
           </div>
@@ -32,7 +32,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight mb-8"
+          className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight mb-6 md:mb-8"
         >
           {t("hero.title1")}{" "}
           <span className="gradient-text">{t("hero.title2")}</span>
@@ -44,7 +44,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="text-xl md:text-2xl text-text-muted max-w-3xl mx-auto mb-12 leading-relaxed"
+          className="text-base sm:text-xl md:text-2xl text-text-muted max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed px-2"
         >
           {t("hero.desc")}
         </motion.p>
@@ -55,15 +55,15 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link href="/order" className="btn-primary text-base px-8 py-4">
+          <Link href="/order" className="btn-primary w-full sm:w-auto text-sm sm:text-base">
             {t("hero.cta")}
-            <svg className="w-5 h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
           <a
             href="#how-it-works"
-            className="btn-secondary text-base px-8 py-4"
+            className="btn-secondary w-full sm:w-auto text-sm sm:text-base"
           >
             {t("hero.how")}
           </a>
@@ -73,7 +73,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-          className="mt-16 flex flex-wrap items-center justify-center gap-8 md:gap-16"
+          className="mt-10 md:mt-16 flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-16"
         >
           {[
             { label: "Taobao", sub: "淘宝" },

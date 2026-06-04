@@ -62,11 +62,11 @@ export default function MarketplaceSupport() {
           <span className="text-base font-semibold text-accent-400 uppercase tracking-widest">
             {t("market.badge")}
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold mt-3 md:mt-4 mb-3 md:mb-4">
             {t("market.title1")}{" "}
             <span className="gradient-text">{t("market.title2")}</span>
           </h2>
-          <p className="text-text-muted max-w-3xl mx-auto text-xl">
+          <p className="text-text-muted max-w-3xl mx-auto text-sm md:text-xl">
             {t("market.desc")}
           </p>
         </motion.div>
@@ -78,17 +78,17 @@ export default function MarketplaceSupport() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`glass rounded-2xl p-8 glow-card border ${mp.border} group cursor-default`}
+              className={`glass rounded-2xl p-5 md:p-8 glow-card border ${mp.border} group cursor-default`}
             >
               <div
-                className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${mp.gradient} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
+                className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${mp.gradient} flex items-center justify-center mb-3 md:mb-5 group-hover:scale-110 transition-transform duration-300`}
               >
-                <span className="text-2xl font-bold text-white">
+                <span className="text-lg md:text-2xl font-bold text-white">
                   {mp.name.charAt(0)}
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-1">{mp.name}</h3>
-              <p className="text-sm text-text-muted mb-3 font-medium">
+              <h3 className="text-base md:text-xl font-bold text-white mb-1">{mp.name}</h3>
+              <p className="text-xs md:text-sm text-text-muted mb-2 md:mb-3 font-medium">
                 {mp.chinese}
               </p>
               <p className="text-text-muted text-sm leading-relaxed">
@@ -101,13 +101,13 @@ export default function MarketplaceSupport() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="glass rounded-2xl p-8 glow-card flex flex-col items-center justify-center text-center"
+            className="glass rounded-2xl p-5 md:p-8 glow-card flex flex-col items-center justify-center text-center"
           >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center mb-5">
-              <span className="text-2xl font-bold gradient-text">+</span>
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center mb-3 md:mb-5">
+              <span className="text-lg md:text-2xl font-bold gradient-text">+</span>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">{t("market.more")}</h3>
-            <p className="text-text-muted text-sm leading-relaxed mb-6">
+            <h3 className="text-base md:text-xl font-bold text-white mb-2 md:mb-3">{t("market.more")}</h3>
+            <p className="text-text-muted text-xs md:text-sm leading-relaxed mb-4 md:mb-6">
               {t("market.more.desc")}
             </p>
             <Link href="/order" className="btn-primary text-sm">
