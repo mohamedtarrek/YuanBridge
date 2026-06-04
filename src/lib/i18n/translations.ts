@@ -10,7 +10,6 @@ export const translations: Record<Language, Record<string, string>> = {
     "nav.contact": "Contact",
     "nav.start": "Start Order",
 
-    "hero.badge": "Trusted by buyers worldwide",
     "hero.title1": "Your",
     "hero.title2": "Bridge",
     "hero.title3": "to Chinese Shopping",
@@ -276,7 +275,6 @@ export const translations: Record<Language, Record<string, string>> = {
     "nav.contact": "اتصل بنا",
     "nav.start": "اطلب الآن",
 
-    "hero.badge": "موثوق من المشترين في جميع أنحاء العالم",
     "hero.title1": "جسرك",
     "hero.title2": "للتسوق",
     "hero.title3": "من الصين",

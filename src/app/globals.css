@@ -107,12 +107,12 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 17px;
+  font-size: 15px;
 }
 
 @media (max-width: 768px) {
   html {
-    font-size: 15px;
+    font-size: 13px;
   }
 }
 
@@ -120,7 +120,7 @@ body {
   background: #0a0f1e;
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   line-height: 1.7;
   overflow-x: hidden;
   width: 100%;
@@ -202,7 +202,7 @@ body {
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 0.75rem;
   color: #f8fafc;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   outline: none;
 }
@@ -257,7 +257,7 @@ textarea.input-field {
 @media (min-width: 768px) {
   .btn-primary {
     padding: 1rem 2.25rem;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -296,7 +296,7 @@ textarea.input-field {
 @media (min-width: 768px) {
   .btn-secondary {
     padding: 1rem 2.25rem;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 }
 
