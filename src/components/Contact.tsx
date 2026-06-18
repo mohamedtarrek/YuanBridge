@@ -13,6 +13,11 @@ export default function Contact() {
 
   const handleWhatsAppClick = () => {
     ttqEvent.contact();
+    ttqEvent.clickButton({ content_name: "WhatsApp Contact", content_type: "contact" });
+  };
+
+  const handlePlaceOrderClick = () => {
+    ttqEvent.clickButton({ content_name: "Contact Place Order", content_type: "cta" });
   };
 
   return (
@@ -74,7 +79,7 @@ export default function Contact() {
             <p className="text-text-muted text-sm md:text-base mb-4 md:mb-6 max-w-md mx-auto">
               {t("contact.cta.desc")}
             </p>
-            <a href="/order" className="btn-primary w-full sm:w-auto">
+            <a href="/order" onClick={handlePlaceOrderClick} className="btn-primary w-full sm:w-auto">
               {t("contact.cta.btn")}
               <svg className="w-4 h-4 md:w-5 md:h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

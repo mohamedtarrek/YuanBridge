@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { ttqEvent } from "@/lib/tiktok-pixel";
 
 const navLinkKeys = [
   { key: "nav.how", href: "#how-it-works" },
@@ -18,6 +19,10 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t, lang, setLang } = useLanguage();
+
+  const handleStartOrderClick = () => {
+    ttqEvent.clickButton({ content_name: "Navbar Start Order", content_type: "cta" });
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -65,6 +70,7 @@ export default function Navbar() {
           </button>
           <Link
             href="/order"
+            onClick={handleStartOrderClick}
             className="btn-primary text-sm py-2.5 px-5"
           >
             {t("nav.start")}
@@ -122,7 +128,10 @@ export default function Navbar() {
               ))}
               <Link
                 href="/order"
-                onClick={() => setMobileOpen(false)}
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleStartOrderClick();
+                }}
                 className="btn-primary text-sm text-center mt-3"
               >
                 {t("nav.start")}

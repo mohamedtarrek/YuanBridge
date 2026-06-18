@@ -170,6 +170,13 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
+
+    ttqEvent.clickButton({ content_name: "Order Submit", content_type: "form" });
+    ttqEvent.lead({
+      content_name: "Order Form Submission",
+      content_type: "form",
+    });
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/submit-order", {
@@ -179,29 +186,29 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
       });
       const data: ApiResponse = await res.json();
       setSubmitResult(data);
-      if (data.success) {
-        ttqEvent.submitForm();
+      if (data.success && !trackedOrderRef.current) {
+        trackedOrderRef.current = true;
 
-        if (!trackedOrderRef.current) {
-          trackedOrderRef.current = true;
+        const phoneHash = await sha256(form.customer.mobileNumber);
+        const nameHash = await sha256(form.customer.fullName);
 
-          const phoneHash = await sha256(form.customer.mobileNumber);
-          ttqEvent.identify({
-            phone_number: [phoneHash],
-          });
+        ttqEvent.identify({
+          phone_number: [phoneHash],
+          external_id: [nameHash],
+        });
 
-          ttqEvent.placeAnOrder({
-            contents: [
-              {
-                content_id: data.orderId || "unknown",
-                content_type: "service",
-                content_name: "YuanBridge Purchase Service",
-              },
-            ],
-            value: 0,
-            currency: "USD",
-          });
-        }
+        ttqEvent.placeAnOrder({
+          contents: [
+            {
+              content_id: data.orderId || "unknown",
+              content_type: "service",
+              content_name: "YuanBridge Purchase Service",
+            },
+          ],
+          value: 0,
+          currency: "USD",
+          event_id: data.orderId || undefined,
+        });
 
         setForm(defaultForm);
       }

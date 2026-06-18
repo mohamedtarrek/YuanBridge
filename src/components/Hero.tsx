@@ -3,9 +3,18 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { ttqEvent } from "@/lib/tiktok-pixel";
 
 export default function Hero() {
   const { t } = useLanguage();
+
+  const handleCtaClick = () => {
+    ttqEvent.clickButton({ content_name: "Hero Start Order", content_type: "cta" });
+  };
+
+  const handleHowClick = () => {
+    ttqEvent.clickButton({ content_name: "Hero How It Works", content_type: "cta" });
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -44,7 +53,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link href="/order" className="btn-primary w-full sm:w-auto text-sm sm:text-base">
+          <Link href="/order" onClick={handleCtaClick} className="btn-primary w-full sm:w-auto text-sm sm:text-base">
             {t("hero.cta")}
             <svg className="w-4 h-4 sm:w-5 sm:h-5 rtl-flip" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -52,6 +61,7 @@ export default function Hero() {
           </Link>
           <a
             href="#how-it-works"
+            onClick={handleHowClick}
             className="btn-secondary w-full sm:w-auto text-sm sm:text-base"
           >
             {t("hero.how")}

@@ -1,9 +1,9 @@
 type TikTokEvent =
   | "PageView" | "ViewContent" | "Search"
-  | "AddToCart" | "InitiateCheckout" | "CompleteRegistration"
-  | "SubmitForm" | "Contact" | "ClickButton"
-  | "Purchase" | "Subscribe" | "Login"
-  | "PlaceAnOrder";
+  | "AddToCart" | "AddToWishlist" | "InitiateCheckout"
+  | "CompleteRegistration" | "Contact"
+  | "ClickButton" | "Lead" | "Purchase"
+  | "Subscribe" | "Login" | "PlaceAnOrder";
 
 interface TikTokContent {
   content_id: string;
@@ -27,6 +27,7 @@ interface TikTokEventParams {
   search_string?: string;
   email?: string;
   phone_number?: string;
+  event_id?: string;
   [key: string]: string | number | boolean | TikTokContent[] | undefined;
 }
 
@@ -44,6 +45,7 @@ interface Ttq {
 }
 
 function getTtq(): Ttq | undefined {
+  if (typeof window === "undefined") return undefined;
   return (window as unknown as Record<string, unknown>).ttq as Ttq | undefined;
 }
 
@@ -93,10 +95,6 @@ export const ttqEvent = {
     track("ClickButton", params);
   },
 
-  submitForm() {
-    track("SubmitForm");
-  },
-
   completeRegistration() {
     track("CompleteRegistration");
   },
@@ -111,6 +109,10 @@ export const ttqEvent = {
 
   initiateCheckout(params?: TikTokEventParams) {
     track("InitiateCheckout", params);
+  },
+
+  lead(params?: TikTokEventParams) {
+    track("Lead", params);
   },
 
   purchase(params?: TikTokEventParams) {
