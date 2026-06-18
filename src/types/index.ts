@@ -24,4 +24,5 @@ export interface OrderFormData {
 export interface ApiResponse {
   success: boolean;
   message: string;
+  orderId?: string;
 }

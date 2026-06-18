@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { OrderFormData, ApiResponse } from "@/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { currencyOptions, getPaymentMethods, countries, getCountryName } from "@/lib/i18n/translations";
-import { ttqEvent } from "@/lib/tiktok-pixel";
+import { ttqEvent, sha256 } from "@/lib/tiktok-pixel";
 
 interface OrderFormProps {
   initialUrl?: string;
@@ -63,6 +63,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
   const [countryOpen, setCountryOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
   const countryRef = useRef<HTMLDivElement>(null);
+  const trackedOrderRef = useRef(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -180,6 +181,28 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
       setSubmitResult(data);
       if (data.success) {
         ttqEvent.submitForm();
+
+        if (!trackedOrderRef.current) {
+          trackedOrderRef.current = true;
+
+          const phoneHash = await sha256(form.customer.mobileNumber);
+          ttqEvent.identify({
+            phone_number: [phoneHash],
+          });
+
+          ttqEvent.placeAnOrder({
+            contents: [
+              {
+                content_id: data.orderId || "unknown",
+                content_type: "service",
+                content_name: "YuanBridge Purchase Service",
+              },
+            ],
+            value: 0,
+            currency: "USD",
+          });
+        }
+
         setForm(defaultForm);
       }
     } catch {

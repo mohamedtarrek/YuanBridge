@@ -2,7 +2,16 @@ type TikTokEvent =
   | "PageView" | "ViewContent" | "Search"
   | "AddToCart" | "InitiateCheckout" | "CompleteRegistration"
   | "SubmitForm" | "Contact" | "ClickButton"
-  | "Purchase" | "Subscribe" | "Login";
+  | "Purchase" | "Subscribe" | "Login"
+  | "PlaceAnOrder";
+
+interface TikTokContent {
+  content_id: string;
+  content_type: string;
+  content_name: string;
+  quantity?: number;
+  price?: number;
+}
 
 interface TikTokEventParams {
   value?: number;
@@ -11,18 +20,26 @@ interface TikTokEventParams {
   content_name?: string;
   content_type?: string;
   content_category?: string;
+  contents?: TikTokContent[];
   quantity?: number;
   price?: number;
   order_id?: string;
   search_string?: string;
   email?: string;
   phone_number?: string;
-  [key: string]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | TikTokContent[] | undefined;
+}
+
+interface TikTokIdentifyParams {
+  email?: string[];
+  phone_number?: string[];
+  external_id?: string[];
 }
 
 interface Ttq {
   page: () => void;
   track: (event: string, params?: TikTokEventParams) => void;
+  identify: (params: TikTokIdentifyParams | string) => void;
   [key: string]: unknown;
 }
 
@@ -35,6 +52,21 @@ function track(event: TikTokEvent, params?: TikTokEventParams) {
   if (ttq?.track) {
     ttq.track(event, params);
   }
+}
+
+function callIdentify(params: TikTokIdentifyParams) {
+  const ttq = getTtq();
+  if (ttq?.identify) {
+    ttq.identify(params);
+  }
+}
+
+export async function sha256(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input.trim().toLowerCase());
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const ttqEvent = {
@@ -87,5 +119,13 @@ export const ttqEvent = {
 
   subscribe() {
     track("Subscribe");
+  },
+
+  placeAnOrder(params: TikTokEventParams) {
+    track("PlaceAnOrder", params);
+  },
+
+  identify(params: TikTokIdentifyParams) {
+    callIdentify(params);
   },
 };

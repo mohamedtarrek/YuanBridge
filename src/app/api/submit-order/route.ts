@@ -1,18 +1,28 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { rateLimit } from "@/lib/rate-limit";
 import { getIp } from "@/lib/utils";
 import type { OrderFormData } from "@/types";
+
+function generateOrderId(): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = randomBytes(4).toString("hex").toUpperCase();
+  return `YB-${timestamp}-${random}`;
+}
 
 function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
 }
 
-function formatTelegramMessage(data: OrderFormData): string {
+function formatTelegramMessage(data: OrderFormData, orderId: string): string {
   const lines: string[] = [];
 
   lines.push("═══════════════════════════════════════");
   lines.push("           * NEW PURCHASE ORDER *");
   lines.push("═══════════════════════════════════════\n");
+
+  lines.push(`📋 *Order ID:* \\#${escapeMarkdown(orderId)}`);
+  lines.push("");
 
   lines.push("*👤 CUSTOMER INFORMATION*");
   lines.push("─────────────────────────────────────");
@@ -83,7 +93,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const message = formatTelegramMessage(data);
+    const orderId = generateOrderId();
+    const message = formatTelegramMessage(data, orderId);
     const encodedMessage = encodeURIComponent(message);
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodedMessage}&parse_mode=Markdown`;
@@ -106,6 +117,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Your order has been submitted successfully!",
+      orderId,
     });
   } catch (error) {
     console.error("Order submission error:", error);
