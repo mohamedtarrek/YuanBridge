@@ -10,14 +10,18 @@ const PIXEL_ID =
 
 export default function TikTokPixel() {
   const pathname = usePathname();
-  const isFirstRender = useRef(true);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
       return;
     }
     ttqEvent.page();
+    ttqEvent.viewContent({
+      content_name: document.title,
+      content_type: "page",
+    });
   }, [pathname]);
 
   return (

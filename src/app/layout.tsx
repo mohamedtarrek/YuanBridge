@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import SkyBackground from "@/components/SkyBackground";
+import TikTokPixel from "@/components/TikTokPixel";
 import "./globals.css";
 
 const inter = Inter({
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`} dir="ltr">
       <body className="min-h-full flex flex-col relative">
         <SkyBackground />
+        <TikTokPixel />
         <div className="relative z-10 flex flex-col min-h-full">
           <LanguageProvider>{children}</LanguageProvider>
         </div>

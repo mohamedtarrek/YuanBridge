@@ -1,19 +1,8 @@
-const TIKTOK_EVENTS = {
-  PageView: "PageView",
-  ViewContent: "ViewContent",
-  Search: "Search",
-  AddToCart: "AddToCart",
-  InitiateCheckout: "InitiateCheckout",
-  CompleteRegistration: "CompleteRegistration",
-  SubmitForm: "SubmitForm",
-  Contact: "Contact",
-  ClickButton: "ClickButton",
-  Purchase: "Purchase",
-  Subscribe: "Subscribe",
-  Login: "Login",
-} as const;
-
-type TikTokEvent = keyof typeof TIKTOK_EVENTS;
+type TikTokEvent =
+  | "PageView" | "ViewContent" | "Search"
+  | "AddToCart" | "InitiateCheckout" | "CompleteRegistration"
+  | "SubmitForm" | "Contact" | "ClickButton"
+  | "Purchase" | "Subscribe" | "Login";
 
 interface TikTokEventParams {
   value?: number;
@@ -31,8 +20,14 @@ interface TikTokEventParams {
   [key: string]: string | number | boolean | undefined;
 }
 
-function getTtq(): any {
-  return (window as any).ttq;
+interface Ttq {
+  page: () => void;
+  track: (event: string, params?: TikTokEventParams) => void;
+  [key: string]: unknown;
+}
+
+function getTtq(): Ttq | undefined {
+  return (window as unknown as Record<string, unknown>).ttq as Ttq | undefined;
 }
 
 function track(event: TikTokEvent, params?: TikTokEventParams) {

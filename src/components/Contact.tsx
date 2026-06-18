@@ -4,11 +4,16 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { ttqEvent } from "@/lib/tiktok-pixel";
 
 export default function Contact() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const { t } = useLanguage();
+
+  const handleWhatsAppClick = () => {
+    ttqEvent.contact();
+  };
 
   return (
     <section id="contact" className="section-padding">
@@ -36,6 +41,7 @@ export default function Contact() {
             href="https://wa.me/201019808766"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.4 }}

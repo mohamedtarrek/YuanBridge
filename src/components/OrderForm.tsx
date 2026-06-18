@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { OrderFormData, ApiResponse } from "@/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { currencyOptions, getPaymentMethods, countries, getCountryName } from "@/lib/i18n/translations";
+import { ttqEvent } from "@/lib/tiktok-pixel";
 
 interface OrderFormProps {
   initialUrl?: string;
@@ -71,6 +72,13 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    ttqEvent.viewContent({
+      content_type: "product_page",
+      content_name: "Order Form",
+    });
   }, []);
 
   const filteredCountries = countries.filter((c) =>
@@ -171,6 +179,7 @@ export default function OrderForm({ initialUrl = "" }: OrderFormProps) {
       const data: ApiResponse = await res.json();
       setSubmitResult(data);
       if (data.success) {
+        ttqEvent.submitForm();
         setForm(defaultForm);
       }
     } catch {
