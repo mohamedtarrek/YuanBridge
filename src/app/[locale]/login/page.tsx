@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { Button } from '@/components/ui/Button';
+import { signIn } from 'next-auth/react';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const { t, lang, dir } = useLanguage();
@@ -11,11 +13,36 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        const message = 'Invalid email or password'
+        setError(message)
+        toast.error(message)
+        return
+      }
+
+      toast.success('Welcome back!')
+      window.location.href = `/${lang}/dashboard`
+    } catch {
+      const message = 'Network error. Please try again.'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
   };
 
   return (
@@ -108,6 +135,16 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 text-sm text-danger"
+                >
+                  {error}
+                </motion.div>
+              )}
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ClientLayout } from './client-layout';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,7 +51,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-surface-dark`}>
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout>
+          <Toaster position="top-center" toastOptions={{
+            style: {
+              background: 'oklch(0.18 0.01 260)',
+              color: 'oklch(0.85 0.01 260)',
+              border: '1px solid oklch(0.25 0.01 260)',
+              borderRadius: '12px',
+              fontSize: '14px',
+            },
+            success: { iconTheme: { primary: '#d4a843', secondary: '#0f0f1a' } },
+            error: { iconTheme: { primary: '#ef4444', secondary: '#0f0f1a' } },
+          }} />
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

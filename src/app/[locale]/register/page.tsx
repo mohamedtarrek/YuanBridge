@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { Button } from '@/components/ui/Button';
+import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
   const { t, lang, dir } = useLanguage();
@@ -13,11 +14,40 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, confirmPassword }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        const message = data.errors
+          ? Object.values(data.errors).flat().join(', ')
+          : data.message || 'Registration failed'
+        setError(message)
+        toast.error(message)
+        return
+      }
+
+      toast.success('Account created! Redirecting...')
+      window.location.href = `/${lang}/login`
+    } catch (err) {
+      const message = 'Network error. Please try again.'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
   };
 
   return (
@@ -160,6 +190,16 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 text-sm text-danger"
+                >
+                  {error}
+                </motion.div>
+              )}
 
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
