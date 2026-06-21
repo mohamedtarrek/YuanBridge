@@ -88,7 +88,8 @@ export function createRssCrawler(config: SourceConfig): SourceCrawler {
           }
 
           await new Promise(r => setTimeout(r, config.crawlerConfig.requestDelayMs))
-        } catch {
+        } catch (err) {
+          console.warn('[RssCrawler] Item processing failed', err)
           continue
         }
 

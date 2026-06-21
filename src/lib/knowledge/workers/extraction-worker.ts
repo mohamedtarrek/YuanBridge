@@ -75,7 +75,8 @@ export async function runExtractionWorker(): Promise<ExtractionWorkerResult> {
         let content: CollectedContent
         try {
           content = JSON.parse(entry.data) as CollectedContent
-        } catch {
+        } catch (err) {
+          console.warn('[ExtractionWorker] Failed to parse entry data, deleting corrupt entry', entry.id, err)
           await prisma.report.delete({ where: { id: entry.id } })
           continue
         }
@@ -109,7 +110,8 @@ export async function runExtractionWorker(): Promise<ExtractionWorkerResult> {
               isDuplicate = true
               break
             }
-          } catch {
+          } catch (err) {
+            console.warn('[ExtractionWorker] Similarity check failed, skipping', err)
             continue
           }
         }

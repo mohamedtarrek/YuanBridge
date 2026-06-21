@@ -54,7 +54,19 @@ export async function POST(request: Request) {
     })
     console.log('[REGISTER] User created successfully:', user.id)
 
-    const safeUser = sanitizeUser(user)
+    // Verify the user was actually persisted
+    console.log('[REGISTER] Verifying user was persisted...')
+    const verified = await prisma.user.findUnique({ where: { email } })
+    if (!verified) {
+      console.error('[REGISTER] CRITICAL: User not found after create! Email:', email)
+      return NextResponse.json(
+        { success: false, message: 'Account creation failed - database write did not persist.' },
+        { status: 500 }
+      )
+    }
+    console.log('[REGISTER] User confirmed in database:', verified.id, verified.email, verified.role)
+
+    const safeUser = sanitizeUser(verified)
 
     return NextResponse.json(
       { success: true, message: 'User registered successfully.', user: safeUser },

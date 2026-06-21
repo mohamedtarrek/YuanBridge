@@ -48,7 +48,8 @@ export class FinnhubProvider extends BaseProvider {
         timestamp: data.t * 1000 || Date.now(),
         source: this.name,
       }
-    } catch {
+    } catch (err) {
+      console.warn('[Finnhub] fetchQuote failed for', pair, err)
       return this.getMockQuote(pair)
     }
   }
@@ -82,7 +83,8 @@ export class FinnhubProvider extends BaseProvider {
       }))
 
       return { pair, interval, candles, source: this.name }
-    } catch {
+    } catch (err) {
+      console.warn('[Finnhub] fetchHistorical failed for', pair, err)
       return this.getMockCandles(pair, interval, count)
     }
   }

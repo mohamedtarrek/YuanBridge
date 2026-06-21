@@ -275,7 +275,8 @@ export async function downgradeSubscription(userId: string): Promise<void> {
 async function fetchSubscriptionFromDb(userId: string): Promise<any | null> {
   try {
     return prisma.subscription.findUnique({ where: { userId } })
-  } catch {
+  } catch (err) {
+    console.error('[Payment] fetchSubscriptionFromDb failed for', userId, err)
     return null
   }
 }
@@ -283,7 +284,8 @@ async function fetchSubscriptionFromDb(userId: string): Promise<any | null> {
 async function findSubscriptionById(id: string): Promise<any | null> {
   try {
     return prisma.subscription.findUnique({ where: { id } })
-  } catch {
+  } catch (err) {
+    console.error('[Payment] findSubscriptionById failed for', id, err)
     return null
   }
 }
@@ -291,7 +293,8 @@ async function findSubscriptionById(id: string): Promise<any | null> {
 async function findSubscriptionByStripeSubId(stripeSubId: string): Promise<any | null> {
   try {
     return prisma.subscription.findFirst({ where: { stripeSubId } })
-  } catch {
+  } catch (err) {
+    console.error('[Payment] findSubscriptionByStripeSubId failed', err)
     return null
   }
 }
@@ -299,7 +302,8 @@ async function findSubscriptionByStripeSubId(stripeSubId: string): Promise<any |
 async function findSubscriptionByPaypalSubId(paypalSubId: string): Promise<any | null> {
   try {
     return prisma.subscription.findFirst({ where: { paypalSubId } })
-  } catch {
+  } catch (err) {
+    console.error('[Payment] findSubscriptionByPaypalSubId failed', err)
     return null
   }
 }
@@ -307,8 +311,8 @@ async function findSubscriptionByPaypalSubId(paypalSubId: string): Promise<any |
 async function updateSubscription(id: string, data: any): Promise<void> {
   try {
     await prisma.subscription.update({ where: { id }, data })
-  } catch {
-    // DB not available, skip
+  } catch (err) {
+    console.error('[Payment] updateSubscription failed for', id, err)
   }
 }
 
@@ -323,8 +327,8 @@ async function createPayment(data: {
 }): Promise<void> {
   try {
     await prisma.payment.create({ data: data as any })
-  } catch {
-    // DB not available, skip
+  } catch (err) {
+    console.error('[Payment] createPayment failed', err)
   }
 }
 
@@ -344,7 +348,8 @@ async function listPaymentsByUser(userId: string): Promise<Payment[]> {
       provider: p.provider.toLowerCase(),
       createdAt: p.createdAt.toISOString(),
     }))
-  } catch {
+  } catch (err) {
+    console.error('[Payment] listPaymentsByUser failed for', userId, err)
     return []
   }
 }
@@ -352,7 +357,8 @@ async function listPaymentsByUser(userId: string): Promise<Payment[]> {
 async function findPaymentById(id: string): Promise<any | null> {
   try {
     return prisma.payment.findUnique({ where: { id } })
-  } catch {
+  } catch (err) {
+    console.error('[Payment] findPaymentById failed for', id, err)
     return null
   }
 }

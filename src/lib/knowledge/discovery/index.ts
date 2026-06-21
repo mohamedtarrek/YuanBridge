@@ -56,7 +56,8 @@ export async function runDiscoveryCycle(
       try {
         const items = await source.crawl()
         return { source: source.type, items }
-      } catch {
+      } catch (err) {
+        console.warn('[Discovery] Crawler failed for source', source.type, err)
         return { source: source.type, items: [] as CollectedContent[] }
       }
     })
@@ -95,7 +96,8 @@ export async function runSingleSource(
   try {
     const items = await source.crawl()
     return items.filter(item => !isDuplicate(item.sourceUrl))
-  } catch {
+  } catch (err) {
+    console.warn('[Discovery] Single source crawl failed for', source?.type, err)
     return []
   }
 }

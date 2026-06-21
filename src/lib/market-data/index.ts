@@ -40,7 +40,8 @@ export async function fetchMarketData(pair: string): Promise<QuoteData> {
       const quote = await provider.fetchQuote(pair)
       if (quote.source !== provider.name) continue
       return quote
-    } catch {
+    } catch (err) {
+      console.warn('[MarketData] fetchQuote failed for provider', provider.name, err)
       continue
     }
   }
@@ -59,7 +60,8 @@ export async function fetchHistoricalData(
     try {
       const data = await provider.fetchHistorical(pair, interval, count)
       if (data.candles.length > 0 && data.source === provider.name) return data
-    } catch {
+    } catch (err) {
+      console.warn('[MarketData] fetchHistorical failed for provider', provider.name, err)
       continue
     }
   }
@@ -71,7 +73,8 @@ export async function getMultipleQuotes(pairs: string[]): Promise<QuoteData[]> {
   const provider = getProvider()
   try {
     return await provider.fetchMultiple(pairs)
-  } catch {
+  } catch (err) {
+    console.warn('[MarketData] getMultipleQuotes failed', err)
     return pairs.map(generateMockData)
   }
 }

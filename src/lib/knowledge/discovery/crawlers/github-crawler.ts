@@ -48,7 +48,8 @@ async function searchRepositories(topic: string, perPage: number = 10): Promise<
       timeout: 10000,
     })
     return res.data.items || []
-  } catch {
+  } catch (err) {
+    console.warn('[GitHubCrawler] searchRepositories failed for topic', err)
     return []
   }
 }
@@ -63,7 +64,8 @@ async function fetchReadme(fullName: string): Promise<string | null> {
       timeout: 10000,
     })
     return typeof res.data === 'string' ? res.data.slice(0, 10000) : null
-  } catch {
+  } catch (err) {
+    console.warn('[GitHubCrawler] fetchReadme failed for', fullName, err)
     return null
   }
 }
@@ -157,7 +159,8 @@ export function createGithubCrawler(config: SourceConfig): SourceCrawler {
           }
 
           await new Promise(r => setTimeout(r, config.crawlerConfig.requestDelayMs))
-        } catch {
+        } catch (err) {
+          console.warn('[GitHubCrawler] crawl topic failed', err)
           continue
         }
 

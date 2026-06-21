@@ -37,7 +37,8 @@ export async function POST(request: Request) {
 
     try {
       await cancelPaymentSubscription(subscription.id)
-    } catch {
+    } catch (err) {
+      console.warn('[SubscriptionCancel] cancelPaymentSubscription failed, falling back to local cancel:', err)
       const updated = await prisma.subscription.update({
         where: { id: subscription.id },
         data: {

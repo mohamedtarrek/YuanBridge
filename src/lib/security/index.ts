@@ -175,7 +175,8 @@ export async function csrfProtection(): Promise<void | NextResponse> {
           { status: 403 }
         )
       }
-    } catch {
+    } catch (err) {
+      console.error('[CSRF] Error parsing origin URL:', err)
       return NextResponse.json(
         { message: 'CSRF validation failed' },
         { status: 403 }

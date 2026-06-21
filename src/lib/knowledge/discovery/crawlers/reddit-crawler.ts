@@ -64,7 +64,8 @@ async function fetchSubredditPosts(
     })
 
     return res.data.data.children.filter(p => !p.data.over_18)
-  } catch {
+  } catch (err) {
+    console.warn('[RedditCrawler] fetchSubreddit failed', err)
     return []
   }
 }
@@ -110,7 +111,8 @@ export function createRedditCrawler(config: SourceConfig): SourceCrawler {
           }
 
           await new Promise(r => setTimeout(r, config.crawlerConfig.requestDelayMs))
-        } catch {
+        } catch (err) {
+          console.warn('[RedditCrawler] Post processing failed', err)
           continue
         }
 

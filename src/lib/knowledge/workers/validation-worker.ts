@@ -41,7 +41,8 @@ export async function runValidationWorker(): Promise<ValidationWorkerResult> {
         let idea: TradingIdea
         try {
           idea = JSON.parse(entry.data) as TradingIdea
-        } catch {
+        } catch (err) {
+          console.warn('[ValidationWorker] Failed to parse entry data, deleting corrupt entry', entry.id, err)
           await prisma.report.delete({ where: { id: entry.id } })
           continue
         }

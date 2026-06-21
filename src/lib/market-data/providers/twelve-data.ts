@@ -56,7 +56,8 @@ export class TwelveDataProvider extends BaseProvider {
         timestamp: data.timestamp || Date.now(),
         source: this.name,
       }
-    } catch {
+    } catch (err) {
+      console.warn('[TwelveData] fetchQuote failed for', pair, err)
       return this.getMockQuote(pair)
     }
   }
@@ -85,7 +86,8 @@ export class TwelveDataProvider extends BaseProvider {
       }))
 
       return { pair, interval, candles, source: this.name }
-    } catch {
+    } catch (err) {
+      console.warn('[TwelveData] fetchHistorical failed for', pair, err)
       return this.getMockCandles(pair, interval, count)
     }
   }

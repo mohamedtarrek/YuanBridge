@@ -52,7 +52,8 @@ async function searchVideos(apiKey: string, query: string, maxResults: number = 
       timeout: 10000,
     })
     return res.data.items || []
-  } catch {
+  } catch (err) {
+    console.warn('[YouTubeCrawler] searchVideos failed', err)
     return []
   }
 }
@@ -68,7 +69,8 @@ async function getVideoDetails(apiKey: string, videoId: string): Promise<YouTube
       timeout: 10000,
     })
     return res.data.items?.[0] || null
-  } catch {
+  } catch (err) {
+    console.warn('[YouTubeCrawler] getVideoDetails failed', err)
     return null
   }
 }
@@ -97,7 +99,8 @@ async function fetchCaptions(apiKey: string, videoId: string): Promise<string | 
     })
 
     return typeof captionRes.data === 'string' ? captionRes.data.slice(0, 5000) : null
-  } catch {
+  } catch (err) {
+    console.warn('[YouTubeCrawler] fetchCaptions failed', err)
     return null
   }
 }
@@ -163,7 +166,8 @@ export function createYoutubeCrawler(config: SourceConfig): SourceCrawler {
           }
 
           await new Promise(r => setTimeout(r, config.crawlerConfig.requestDelayMs))
-        } catch {
+        } catch (err) {
+          console.warn('[YouTubeCrawler] crawl query failed', err)
           continue
         }
 

@@ -89,7 +89,8 @@ export class AlphaVantageProvider extends BaseProvider {
       }))
 
       return { pair, interval, candles, source: this.name }
-    } catch {
+    } catch (err) {
+      console.warn('[AlphaVantage] fetchHistorical failed for', pair, err)
       return this.getMockCandles(pair, interval, count)
     }
   }

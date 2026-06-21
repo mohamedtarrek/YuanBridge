@@ -62,7 +62,8 @@ async function checkRobotsTxt(url: string): Promise<boolean> {
 
     const path = parsed.pathname
     return !disallowed.some(d => path.startsWith(d))
-  } catch {
+  } catch (err) {
+    console.warn('[WebCrawler] robots.txt check failed, allowing by default', err)
     return true
   }
 }
@@ -204,7 +205,8 @@ export function createWebCrawler(config: SourceConfig): SourceCrawler {
           })
 
           await new Promise(r => setTimeout(r, crawlerConfig.requestDelayMs))
-        } catch {
+        } catch (err) {
+          console.warn('[WebCrawler] Page processing failed', err)
           continue
         }
 

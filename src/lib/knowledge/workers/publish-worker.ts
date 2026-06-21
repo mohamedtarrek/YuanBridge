@@ -38,7 +38,8 @@ export async function runPublishWorker(): Promise<PublishWorkerResult> {
         let idea: TradingIdea
         try {
           idea = JSON.parse(entry.data) as TradingIdea
-        } catch {
+        } catch (err) {
+          console.warn('[PublishWorker] Failed to parse entry data, deleting corrupt entry', entry.id, err)
           await prisma.report.delete({ where: { id: entry.id } })
           continue
         }

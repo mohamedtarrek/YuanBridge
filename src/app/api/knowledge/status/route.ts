@@ -83,7 +83,8 @@ export async function GET() {
 function tryParseResult(result: string): unknown {
   try {
     return JSON.parse(result)
-  } catch {
+  } catch (err) {
+    console.warn('[KnowledgeStatus] Failed to parse result JSON, returning raw string', err)
     return result
   }
 }
