@@ -1,7 +1,7 @@
 import { nextAuthAuth, handlers, signIn, signOut } from './auth-options'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import type { User } from '@/generated/prisma'
+import type { User } from '@prisma/client'
 
 export { handlers, signIn, signOut }
 

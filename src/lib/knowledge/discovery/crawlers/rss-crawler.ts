@@ -96,7 +96,7 @@ export function createRssCrawler(config: SourceConfig): SourceCrawler {
       }
 
       if (items.length === 0) {
-        items.push(getFallbackContent())
+        return []
       }
 
       return items
@@ -104,20 +104,4 @@ export function createRssCrawler(config: SourceConfig): SourceCrawler {
   }
 }
 
-function getFallbackContent(): CollectedContent {
-  return {
-    id: uuidv4(),
-    source: 'rss_feed',
-    sourceUrl: 'https://example.com/rss/mock',
-    title: 'EUR/USD Trading Strategy Update (Fallback)',
-    content: 'The EUR/USD pair is showing a potential bullish flag pattern on the 4H chart. Entry above 1.1050 with stop at 1.0980. Target 1.1150.',
-    author: 'Market Analyst (Mock)',
-    publishedAt: new Date().toISOString(),
-    collectedAt: new Date().toISOString(),
-    status: 'pending',
-    sourceType: 'rss_article',
-    engagement: { likes: 0, comments: 0, shares: 0, views: 0 },
-    keywords: ['forex', 'trading', 'strategy', 'eur/usd'],
-    marketCategory: 'forex',
-  }
-}
+

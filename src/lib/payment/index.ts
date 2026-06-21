@@ -46,9 +46,7 @@ export async function createCheckoutSession(
 ): Promise<{ url: string }> {
   const stripe = getStripe()
   if (!stripe) {
-    return {
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payments/checkout-mock?priceId=${priceId}&userId=${userId}`,
-    }
+    throw new Error('Stripe is not configured. Set STRIPE_SECRET_KEY in environment variables.')
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -69,7 +67,7 @@ export async function createPayPalOrder(
 ): Promise<{ orderId: string }> {
   const accessToken = await getPaypalAccessToken()
   if (!accessToken) {
-    return { orderId: `mock_order_${crypto.randomUUID().slice(0, 12)}` }
+    throw new Error('PayPal is not configured. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in environment variables.')
   }
 
   const base = getPaypalBase()
@@ -90,7 +88,7 @@ export async function createPayPalOrder(
   })
 
   if (!response.ok) {
-    return { orderId: `mock_order_${crypto.randomUUID().slice(0, 12)}` }
+    throw new Error(`PayPal API error: ${response.status} ${response.statusText}`)
   }
 
   const data = await response.json()

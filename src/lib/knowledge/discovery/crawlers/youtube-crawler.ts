@@ -124,7 +124,7 @@ export function createYoutubeCrawler(config: SourceConfig): SourceCrawler {
       const apiKey = config.credentials?.apiKey
 
       if (!apiKey) {
-        return [getFallbackContent()]
+        return []
       }
 
       for (const query of TRADING_SEARCH_QUERIES) {
@@ -170,25 +170,9 @@ export function createYoutubeCrawler(config: SourceConfig): SourceCrawler {
         if (items.length >= config.crawlerConfig.maxItemsPerRun) break
       }
 
-      return items.length > 0 ? items : [getFallbackContent()]
+      return items.length > 0 ? items : []
     },
   }
 }
 
-function getFallbackContent(): CollectedContent {
-  return {
-    id: uuidv4(),
-    source: 'youtube',
-    sourceUrl: 'https://youtube.com/watch?v=mock',
-    title: 'Simple RSI Divergence Strategy (Fallback)',
-    content: 'In this video we explore a simple RSI divergence strategy. Entry when RSI shows hidden divergence on the 1H chart.',
-    author: 'TradingMock',
-    publishedAt: new Date().toISOString(),
-    collectedAt: new Date().toISOString(),
-    status: 'pending',
-    sourceType: 'youtube_video',
-    engagement: { likes: 230, comments: 45, shares: 12, views: 5200 },
-    keywords: ['forex', 'trading', 'strategy', 'rsi', 'divergence'],
-    marketCategory: 'forex',
-  }
-}
+

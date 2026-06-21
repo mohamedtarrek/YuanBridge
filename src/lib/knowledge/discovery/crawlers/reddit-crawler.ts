@@ -118,7 +118,7 @@ export function createRedditCrawler(config: SourceConfig): SourceCrawler {
       }
 
       if (items.length === 0) {
-        items.push(getFallbackContent())
+        return []
       }
 
       return items
@@ -145,20 +145,4 @@ function detectMarketCategory(title: string, text: string): 'forex' | 'crypto' |
   return null
 }
 
-function getFallbackContent(): CollectedContent {
-  return {
-    id: uuidv4(),
-    source: 'reddit',
-    sourceUrl: 'https://reddit.com/r/Forex/mock',
-    title: 'My Simple Forex Strategy (Fallback)',
-    content: 'I have been testing this strategy for 3 months. Entry on RSI divergence with 50 EMA trend filter. Stop loss at recent swing low.',
-    author: 'reddit_user_mock',
-    publishedAt: new Date().toISOString(),
-    collectedAt: new Date().toISOString(),
-    status: 'pending',
-    sourceType: 'reddit_post',
-    engagement: { likes: 42, comments: 15, shares: 0, views: 0 },
-    keywords: ['forex', 'strategy', 'rsi', 'ema'],
-    marketCategory: 'forex',
-  }
-}
+

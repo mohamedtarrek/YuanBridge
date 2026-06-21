@@ -1,129 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { Button } from '@/components/ui/Button';
 import { PremiumBlur } from '@/components/ui/PremiumBlur';
 import { type Strategy } from '@/lib/types';
-
-const mockStrategies: Strategy[] = [
-  {
-    id: '1',
-    title: 'EUR/USD Bullish Breakout',
-    titleAr: 'انفراج صاعد لليورو مقابل الدولار',
-    currencyPair: 'EUR/USD',
-    direction: 'BUY',
-    entryPrice: 1.08450,
-    stopLoss: 1.07800,
-    takeProfit1: 1.09200,
-    takeProfit2: 1.09800,
-    risk: 'Low',
-    confidence: 87,
-    publishedAt: new Date().toISOString(),
-    summary: 'Strong bullish momentum detected with RSI divergence.',
-    summaryAr: 'تم اكتشاف زخم صاعد قوي مع تباعد في مؤشر RSI.',
-    isPremium: false,
-    technicalAnalysis: '',
-    technicalAnalysisAr: '',
-    fundamentalAnalysis: '',
-    fundamentalAnalysisAr: '',
-    trend: 'Bullish',
-    support: [1.07800, 1.07500, 1.07000],
-    resistance: [1.09200, 1.09800, 1.10500],
-    indicators: { rsi: 62, macd: 'Bullish', ema: 'Bullish', sma: 'Above SMA50', atr: 0.0015, bollingerBands: { upper: 1.095, middle: 1.085, lower: 1.075 } },
-    notes: '',
-    notesAr: '',
-    tradesAnalyzed: 3421,
-    aiModel: 'YuanBridge AI v2.4',
-  },
-  {
-    id: '2',
-    title: 'GBP/USD Bearish Reversal',
-    titleAr: 'انعكاس هابط للجنيه مقابل الدولار',
-    currencyPair: 'GBP/USD',
-    direction: 'SELL',
-    entryPrice: 1.26500,
-    stopLoss: 1.27100,
-    takeProfit1: 1.25700,
-    takeProfit2: 1.25100,
-    risk: 'Medium',
-    confidence: 82,
-    publishedAt: new Date(Date.now() - 3600000).toISOString(),
-    summary: 'Bearish engulfing pattern on daily timeframe with overbought RSI.',
-    summaryAr: 'نمط ابتلاع هابط على الإطار الزمني اليومي مع RSI في منطقة ذروة الشراء.',
-    isPremium: true,
-    technicalAnalysis: '',
-    technicalAnalysisAr: '',
-    fundamentalAnalysis: '',
-    fundamentalAnalysisAr: '',
-    trend: 'Bearish',
-    support: [1.25700, 1.25100, 1.24500],
-    resistance: [1.27100, 1.27500, 1.28200],
-    indicators: { rsi: 72, macd: 'Bearish', ema: 'Bearish', sma: 'Below SMA50', atr: 0.0018, bollingerBands: { upper: 1.275, middle: 1.265, lower: 1.255 } },
-    notes: '',
-    notesAr: '',
-    tradesAnalyzed: 2810,
-    aiModel: 'YuanBridge AI v2.4',
-  },
-  {
-    id: '3',
-    title: 'USD/JPY Range Breakout',
-    titleAr: 'انفراج نطاق الدولار مقابل الين',
-    currencyPair: 'USD/JPY',
-    direction: 'BUY',
-    entryPrice: 149.350,
-    stopLoss: 148.700,
-    takeProfit1: 150.200,
-    takeProfit2: 150.800,
-    risk: 'High',
-    confidence: 76,
-    publishedAt: new Date(Date.now() - 7200000).toISOString(),
-    summary: 'Breaking above resistance with increased volume and momentum.',
-    summaryAr: 'اختراق فوق المقاومة مع زيادة في الحجم والزخم.',
-    isPremium: false,
-    technicalAnalysis: '',
-    technicalAnalysisAr: '',
-    fundamentalAnalysis: '',
-    fundamentalAnalysisAr: '',
-    trend: 'Bullish',
-    support: [148.700, 148.300, 147.800],
-    resistance: [150.200, 150.800, 151.500],
-    indicators: { rsi: 58, macd: 'Bullish', ema: 'Bullish', sma: 'Above SMA50', atr: 0.45, bollingerBands: { upper: 150.5, middle: 149.3, lower: 148.1 } },
-    notes: '',
-    notesAr: '',
-    tradesAnalyzed: 1890,
-    aiModel: 'YuanBridge AI v2.4',
-  },
-  {
-    id: '4',
-    title: 'AUD/USD Support Bounce',
-    titleAr: 'ارتداد الدعم للاسترالي مقابل الدولار',
-    currencyPair: 'AUD/USD',
-    direction: 'BUY',
-    entryPrice: 0.65200,
-    stopLoss: 0.64800,
-    takeProfit1: 0.65800,
-    takeProfit2: 0.66200,
-    risk: 'Low',
-    confidence: 91,
-    publishedAt: new Date(Date.now() - 10800000).toISOString(),
-    summary: 'Strong support level holding with bullish hammer pattern.',
-    summaryAr: 'مستوى دعم قوي متماسك مع نمط المطرقة الصاعدة.',
-    isPremium: true,
-    technicalAnalysis: '',
-    technicalAnalysisAr: '',
-    fundamentalAnalysis: '',
-    fundamentalAnalysisAr: '',
-    trend: 'Bullish',
-    support: [0.64800, 0.64500, 0.64000],
-    resistance: [0.65800, 0.66200, 0.66800],
-    indicators: { rsi: 45, macd: 'Neutral', ema: 'Bullish', sma: 'Above SMA50', atr: 0.0012, bollingerBands: { upper: 0.660, middle: 0.652, lower: 0.644 } },
-    notes: '',
-    notesAr: '',
-    tradesAnalyzed: 4156,
-    aiModel: 'YuanBridge AI v2.4',
-  },
-];
 
 function StrategyCard({ strategy, index }: { strategy: Strategy; index: number }) {
   const { t, lang } = useLanguage();
@@ -220,6 +102,18 @@ function StrategyCard({ strategy, index }: { strategy: Strategy; index: number }
 
 export function LatestStrategies() {
   const { t, lang } = useLanguage();
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/strategies?limit=4')
+      .then(res => res.json())
+      .then(data => {
+        if (data.strategies) setStrategies(data.strategies);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <section className="section-padding relative">
@@ -231,16 +125,34 @@ export function LatestStrategies() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          {mockStrategies.map((strategy, i) => (
-            <StrategyCard key={strategy.id} strategy={strategy} index={i} />
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-2xl p-5 animate-pulse">
+                  <div className="h-4 bg-surface-lighter rounded w-1/3 mb-4" />
+                  <div className="h-4 bg-surface-lighter rounded w-2/3 mb-4" />
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="h-3 bg-surface-lighter rounded" />
+                    <div className="h-3 bg-surface-lighter rounded" />
+                    <div className="h-3 bg-surface-lighter rounded" />
+                    <div className="h-3 bg-surface-lighter rounded" />
+                  </div>
+                  <div className="h-3 bg-surface-lighter rounded w-1/2 mb-3" />
+                  <div className="h-1.5 bg-surface-lighter rounded w-full mb-4" />
+                  <div className="h-3 bg-surface-lighter rounded w-1/4" />
+                </div>
+              ))
+            : strategies.map((strategy, i) => (
+                <StrategyCard key={strategy.id} strategy={strategy} index={i} />
+              ))}
         </div>
 
-        <div className="text-center">
-          <Button variant="secondary" href={`/${lang}/strategies`}>
-            {t('latest.viewAll')}
-          </Button>
-        </div>
+        {!loading && strategies.length > 0 && (
+          <div className="text-center">
+            <Button variant="secondary" href={`/${lang}/strategies`}>
+              {t('latest.viewAll')}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

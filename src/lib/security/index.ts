@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { rateLimitByIp } from './rate-limit'
-import type { User } from '@/generated/prisma'
+import type { User } from '@prisma/client'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 

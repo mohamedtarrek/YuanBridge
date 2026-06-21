@@ -72,12 +72,10 @@ export async function POST(request: Request) {
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      clientSecret: `pi_mock_secret_${crypto.randomUUID().slice(0, 16)}`,
-      amount,
-      currency: currency.toUpperCase(),
-    })
+    return NextResponse.json(
+      { success: false, message: 'No payment provider configured. Set STRIPE_SECRET_KEY or PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET.' },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('Payment intent error:', error)
     return NextResponse.json(

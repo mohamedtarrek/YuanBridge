@@ -212,7 +212,7 @@ export function createWebCrawler(config: SourceConfig): SourceCrawler {
       }
 
       if (items.length === 0) {
-        items.push(getFallbackContent())
+        return []
       }
 
       return items
@@ -220,20 +220,4 @@ export function createWebCrawler(config: SourceConfig): SourceCrawler {
   }
 }
 
-function getFallbackContent(): CollectedContent {
-  return {
-    id: uuidv4(),
-    source: 'web_page',
-    sourceUrl: 'https://example.com/mock-strategy',
-    title: 'Sample Trading Strategy (Fallback)',
-    content: 'This is a sample trading strategy for development. Entry when RSI crosses 30. Exit at 2:1 risk reward.',
-    author: 'Dev Mode',
-    publishedAt: new Date().toISOString(),
-    collectedAt: new Date().toISOString(),
-    status: 'pending',
-    sourceType: 'web_page',
-    engagement: { likes: 0, comments: 0, shares: 0, views: 0 },
-    keywords: ['forex', 'trading', 'strategy', 'sample'],
-    marketCategory: 'forex',
-  }
-}
+

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { rateLimit, validateInput, strategySchema } from '@/lib/security'
-import type { Prisma } from '@/generated/prisma'
+import type { Prisma } from '@prisma/client'
 import { generateStrategy } from '@/lib/ai/engine'
 
 export async function GET(request: NextRequest) {

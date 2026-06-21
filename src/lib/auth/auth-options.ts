@@ -6,7 +6,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
 import type { NextAuthConfig } from 'next-auth'
 import { prisma } from '@/lib/db'
-import type { UserRole } from '@/generated/prisma'
+import type { UserRole } from '@prisma/client'
 
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as NextAuthConfig['adapter'],

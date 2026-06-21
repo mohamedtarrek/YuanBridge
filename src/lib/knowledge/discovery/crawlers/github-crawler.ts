@@ -165,7 +165,7 @@ export function createGithubCrawler(config: SourceConfig): SourceCrawler {
       }
 
       if (items.length === 0) {
-        items.push(getFallbackContent())
+        return []
       }
 
       return items
@@ -173,20 +173,4 @@ export function createGithubCrawler(config: SourceConfig): SourceCrawler {
   }
 }
 
-function getFallbackContent(): CollectedContent {
-  return {
-    id: uuidv4(),
-    source: 'github',
-    sourceUrl: 'https://github.com/mock/forex-strategy',
-    title: 'mock/forex-strategy',
-    content: 'A simple moving average crossover strategy for Forex trading. Entry when 50 EMA crosses above 200 EMA on the daily timeframe. Stop loss at 1 ATR below entry.',
-    author: 'mock-trader',
-    publishedAt: new Date().toISOString(),
-    collectedAt: new Date().toISOString(),
-    status: 'pending',
-    sourceType: 'github_repo',
-    engagement: { likes: 15, comments: 3, shares: 7, views: 0 },
-    keywords: ['forex', 'strategy', 'trading', 'moving-average'],
-    marketCategory: 'forex',
-  }
-}
+

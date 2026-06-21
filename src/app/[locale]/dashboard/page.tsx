@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { Button } from '@/components/ui/Button';
@@ -12,20 +13,6 @@ const activities = [
   { id: '5', action: 'Shared NZD/USD Double Bottom strategy', actionAr: 'تم مشاركة استراتيجية NZD/USD', timestamp: new Date(Date.now() - 259200000) },
   { id: '6', action: 'Profile information updated', actionAr: 'تم تحديث الملف الشخصي', timestamp: new Date(Date.now() - 604800000) },
 ];
-
-const mockUser = {
-  name: 'Ahmed Mohammed',
-  nameAr: 'أحمد محمد',
-  email: 'ahmed@example.com',
-  subscription: 'premium' as const,
-  subscriptionEndsAt: new Date(Date.now() + 86400000 * 25).toISOString(),
-};
-
-const mockStats = {
-  strategiesViewed: 147,
-  savedStrategies: 12,
-  activeAlerts: 5,
-};
 
 function timeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -60,8 +47,69 @@ const itemVariants = {
 
 export default function DashboardOverviewPage() {
   const { t, lang, isRTL } = useLanguage();
-  const userName = lang === 'ar' ? mockUser.nameAr : mockUser.name;
-  const subscriptionStatus = mockUser.subscription === 'premium' ? 'active' : 'expired';
+  const [user, setUser] = useState<{
+    name: string;
+    nameAr: string;
+    email: string;
+    subscription: { plan: string; endsAt: string } | null;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/user/profile')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setUser(data.user);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="glass rounded-2xl p-6 md:p-8 border border-border">
+          <div className="h-8 w-64 bg-white/10 rounded-lg mb-3" />
+          <div className="h-4 w-48 bg-white/10 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="glass-card rounded-2xl p-5 border border-border">
+              <div className="h-10 w-10 bg-white/10 rounded-xl mb-3" />
+              <div className="h-4 w-24 bg-white/10 rounded-lg mb-2" />
+              <div className="h-8 w-16 bg-white/10 rounded-lg" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 glass rounded-2xl p-5 md:p-6 border border-border">
+            <div className="h-6 w-36 bg-white/10 rounded-lg mb-5" />
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-4 p-3">
+                <div className="w-2 h-2 rounded-full bg-white/10" />
+                <div className="flex-1">
+                  <div className="h-4 w-48 bg-white/10 rounded-lg mb-1" />
+                  <div className="h-3 w-20 bg-white/10 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="glass rounded-2xl p-5 md:p-6 border border-border">
+            <div className="h-6 w-28 bg-white/10 rounded-lg mb-5" />
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-10 w-full bg-white/10 rounded-xl mb-3" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const userName = lang === 'ar' ? user?.nameAr : user?.name;
+  const subscriptionPlan = user?.subscription?.plan || 'free';
+  const subscriptionEndsAt = user?.subscription?.endsAt || '';
+  const subscriptionStatus = subscriptionPlan === 'premium' ? 'active' : 'expired';
   const fmtDate = (d: Date) => d.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
@@ -71,7 +119,7 @@ export default function DashboardOverviewPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-text mb-2">
-              {t('dashboard.welcome') || 'Welcome'}, {userName}
+              {t('dashboard.welcome') || 'Welcome'}, {userName || (t as any)('dashboard.user') || 'User'}
             </h1>
             <p className="text-text-muted">{t('dashboard.welcomeSub') || 'Here is your trading overview'}</p>
           </div>
@@ -84,9 +132,9 @@ export default function DashboardOverviewPage() {
               <span className={`w-2 h-2 rounded-full ${subscriptionStatus === 'active' ? 'bg-success' : 'bg-danger'}`} />
               {subscriptionStatus === 'active' ? t('dashboard.active') : t('dashboard.expired')}
             </span>
-            {mockUser.subscription === 'premium' && (
+            {subscriptionPlan === 'premium' && subscriptionEndsAt && (
               <span className="text-xs text-text-dim">
-                {t('dashboard.expiresOn')}: {fmtDate(new Date(mockUser.subscriptionEndsAt))}
+                {t('dashboard.expiresOn')}: {fmtDate(new Date(subscriptionEndsAt))}
               </span>
             )}
           </div>
@@ -104,7 +152,7 @@ export default function DashboardOverviewPage() {
             </div>
             <span className="text-text-dim text-sm">{t('dashboard.strategiesViewed') || 'Strategies Viewed'}</span>
           </div>
-          <span className="text-2xl md:text-3xl font-bold gradient-text">{mockStats.strategiesViewed}</span>
+          <span className="text-2xl md:text-3xl font-bold gradient-text">0</span>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-border">
@@ -116,7 +164,7 @@ export default function DashboardOverviewPage() {
             </div>
             <span className="text-text-dim text-sm">{t('dashboard.savedStrategies') || 'Saved Strategies'}</span>
           </div>
-          <span className="text-2xl md:text-3xl font-bold gradient-text">{mockStats.savedStrategies}</span>
+          <span className="text-2xl md:text-3xl font-bold gradient-text">0</span>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-border">
@@ -128,7 +176,7 @@ export default function DashboardOverviewPage() {
             </div>
             <span className="text-text-dim text-sm">{t('dashboard.activeAlerts') || 'Active Alerts'}</span>
           </div>
-          <span className="text-2xl md:text-3xl font-bold gradient-text">{mockStats.activeAlerts}</span>
+          <span className="text-2xl md:text-3xl font-bold gradient-text">0</span>
         </div>
       </motion.div>
 

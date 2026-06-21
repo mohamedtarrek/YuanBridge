@@ -12,7 +12,7 @@ import {
 } from '@/lib/ai/indicators';
 import { detectPatterns } from '@/lib/ai/pattern-recognition';
 
-function generateMockPrices(pair: string, basePrice?: number): {
+function generateSyntheticPrices(pair: string, basePrice?: number): {
   prices: number[];
   highs: number[];
   lows: number[];
@@ -198,7 +198,7 @@ function determineRisk(volatility: number, atr: number, price: number): 'Low' | 
 }
 
 export async function analyzeMarket(pair: string): Promise<StrategyInput> {
-  const { prices, highs, lows, closes, volumes, marketData } = generateMockPrices(pair);
+  const { prices, highs, lows, closes, volumes, marketData } = generateSyntheticPrices(pair);
   return {
     pair,
     marketData,
@@ -242,7 +242,7 @@ export async function generateStrategy(
         timestamp: new Date(),
       };
     } else {
-      const mock = generateMockPrices(pair);
+      const mock = generateSyntheticPrices(pair);
       prices = mock.prices;
       highs = mock.highs;
       lows = mock.lows;
