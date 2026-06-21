@@ -1,77 +1,75 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
-import type { Language } from "./translations";
-import { translations } from "./translations";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { translations, type TranslationKey } from './translations';
 
-const ARAB_COUNTRIES = new Set([
-  "SA", "AE", "QA", "KW", "BH", "OM", "YE", "IQ", "JO", "LB",
-  "PS", "SY", "EG", "SD", "LY", "TN", "DZ", "MA", "MR", "SO",
-  "DJ", "KM",
-]);
+type Language = 'ar' | 'en';
 
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: string) => string;
-  dir: "ltr" | "rtl";
+  t: (key: TranslationKey) => string;
+  dir: 'rtl' | 'ltr';
+  isRTL: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextType | null>(null);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>("en");
+export function LanguageProvider({ children, initialLang = 'ar' }: { children: ReactNode; initialLang?: Language }) {
+  const [lang, setLangState] = useState<Language>(initialLang);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("yb_lang") as Language | null;
-    if (stored === "en" || stored === "ar") {
+    setMounted(true);
+    const stored = localStorage.getItem('yb_lang') as Language | null;
+    if (stored && (stored === 'ar' || stored === 'en')) {
       setLangState(stored);
-      return;
     }
-
-    fetch("https://ip-api.com/json/")
-      .then((res) => res.json())
-      .then((data) => {
-        const detectedLang: Language =
-          data.countryCode && ARAB_COUNTRIES.has(data.countryCode) ? "ar" : "en";
-        setLangState(detectedLang);
-        localStorage.setItem("yb_lang", detectedLang);
-        document.documentElement.dir = detectedLang === "ar" ? "rtl" : "ltr";
-        document.documentElement.lang = detectedLang;
-      })
-      .catch(() => {
-        const browserLang = navigator.language?.slice(0, 2);
-        if (browserLang === "ar") {
-          setLangState("ar");
-        }
-      });
   }, []);
 
   const setLang = useCallback((newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem("yb_lang", newLang);
-    document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+    localStorage.setItem('yb_lang', newLang);
+    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = newLang;
   }, []);
 
-  const t = useCallback(
-    (key: string): string => {
-      return translations[lang]?.[key] ?? key;
-    },
-    [lang]
-  );
+  useEffect(() => {
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+  }, [lang]);
 
-  const dir: "ltr" | "rtl" = lang === "ar" ? "rtl" : "ltr";
+  const t = useCallback((key: TranslationKey): string => {
+    const translation = translations[lang]?.[key];
+    if (!translation) {
+      console.warn(`Translation missing for key: ${key} in language: ${lang}`);
+      return translations.en[key] || key;
+    }
+    return translation;
+  }, [lang]);
+
+  if (!mounted) {
+    return (
+      <LanguageContext.Provider value={{ lang, setLang, t, dir: lang === 'ar' ? 'rtl' : 'ltr', isRTL: lang === 'ar' }}>
+        {children}
+      </LanguageContext.Provider>
+    );
+  }
+
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
+  const isRTL = lang === 'ar';
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t, dir }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, dir, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );
 }
 
 export function useLanguage() {
-  const ctx = useContext(LanguageContext);
-  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");
-  return ctx;
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
 }

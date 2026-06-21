@@ -1,65 +1,56 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import SkyBackground from "@/components/SkyBackground";
-import TikTokPixel from "@/components/TikTokPixel";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ClientLayout } from './client-layout';
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "YuanBridge – Your Bridge to Chinese Shopping",
-    template: "%s | YuanBridge",
+    default: 'YuanBridge AI - AI-Powered Forex Trading Strategies',
+    template: '%s | YuanBridge AI',
   },
-  description:
-    "YuanBridge is a professional purchasing service that helps you buy products from Chinese marketplaces like Taobao, 1688, Tmall, JD, and Alibaba. We handle payment in CNY and arrange worldwide shipping.",
-  keywords: [
-    "Chinese shopping agent",
-    "buy from Taobao",
-    "China purchasing service",
-    "YuanBridge",
-    "CNY payment",
-    "Chinese marketplace",
-    "1688 agent",
-    "Taobao agent",
-  ],
+  description: 'AI-powered Forex trading strategies platform. Artificial Intelligence analyzes the Forex market 24/7 and generates professional trading strategies with high success probability.',
+  keywords: ['Forex', 'Trading', 'AI', 'Artificial Intelligence', 'Forex Strategies', 'Trading Signals', 'Forex Analysis'],
+  authors: [{ name: 'YuanBridge AI' }],
   openGraph: {
-    title: "YuanBridge – Your Bridge to Chinese Shopping",
-    description:
-      "Professional purchasing service for Chinese marketplaces. We buy for you, handle CNY payment, and ship worldwide.",
-    type: "website",
-    locale: "en_US",
-    siteName: "YuanBridge",
+    title: 'YuanBridge AI - AI-Powered Forex Trading Strategies',
+    description: 'Artificial Intelligence analyzes the Forex market 24/7 and generates professional trading strategies.',
+    siteName: 'YuanBridge AI',
+    type: 'website',
+    locale: 'ar_SA',
+    alternateLocale: 'en_US',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "YuanBridge – Your Bridge to Chinese Shopping",
-    description:
-      "Professional purchasing service for Chinese marketplaces. We buy for you, handle CNY payment, and ship worldwide.",
+    card: 'summary_large_image',
+    title: 'YuanBridge AI - AI-Powered Forex Trading Strategies',
+    description: 'Artificial Intelligence analyzes the Forex market 24/7 and generates professional trading strategies.',
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'verification_token',
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} dir="ltr">
-      <body className="min-h-full flex flex-col relative">
-        <SkyBackground />
-        <TikTokPixel />
-        <div className="relative z-10 flex flex-col min-h-full">
-          <LanguageProvider>{children}</LanguageProvider>
-        </div>
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased bg-surface-dark`}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
