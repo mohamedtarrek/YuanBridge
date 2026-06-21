@@ -27,8 +27,10 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      if (result?.error) {
-        const message = 'Invalid email or password'
+      if (!result || !result.ok || result.error) {
+        const message = result?.error === 'CredentialsSignin'
+          ? 'Invalid email or password'
+          : result?.error || 'Authentication failed'
         setError(message)
         toast.error(message)
         return
@@ -36,8 +38,8 @@ export default function LoginPage() {
 
       toast.success('Welcome back!')
       window.location.href = `/${lang}/dashboard`
-    } catch {
-      const message = 'Network error. Please try again.'
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Network error. Please try again.'
       setError(message)
       toast.error(message)
     } finally {

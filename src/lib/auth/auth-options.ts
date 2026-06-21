@@ -30,6 +30,20 @@ declare module 'next-auth/jwt' {
   }
 }
 
+console.log('[AUTH::INIT] Environment check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  hasAuthSecret: !!process.env.AUTH_SECRET,
+  authSecretLength: process.env.AUTH_SECRET?.length,
+  hasDatabaseUrl: !!process.env.DATABASE_URL,
+  databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 30),
+  hasDirectUrl: !!process.env.DIRECT_URL,
+  hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
+  hasAuthUrl: !!process.env.AUTH_URL,
+  hasAuthTrustHost: !!process.env.AUTH_TRUST_HOST,
+  googleIdConfigured: !!process.env.AUTH_GOOGLE_ID,
+  githubIdConfigured: !!process.env.AUTH_GITHUB_ID,
+})
+
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as NextAuthConfig['adapter'],
   providers: [
@@ -50,14 +64,18 @@ export const authOptions: NextAuthConfig = {
         const email = credentials.email as string
         const password = credentials.password as string
 
-        console.log('[AUTH::authorize] Looking up user:', email)
+        console.log('[AUTH::authorize] Looking up user in DB:', email)
+        console.log('[AUTH::authorize] DB URL:', process.env.DATABASE_URL?.substring(0, 30) + '...')
+
         let user
         try {
           user = await prisma.user.findUnique({
             where: { email },
           })
+          console.log('[AUTH::authorize] DB lookup result:', user ? `User found: ${user.id}` : 'User NOT found')
         } catch (err) {
-          console.error('[AUTH::authorize] DB lookup failed:', err)
+          console.error('[AUTH::authorize] DB lookup EXCEPTION:', err)
+          console.error('[AUTH::authorize] DB lookup error details:', err instanceof Error ? { message: err.message, stack: err.stack?.substring(0, 500) } : err)
           return null
         }
 
@@ -76,12 +94,14 @@ export const authOptions: NextAuthConfig = {
           return null
         }
 
-        console.log('[AUTH::authorize] Comparing password for:', email)
+        console.log('[AUTH::authorize] Password hash present, comparing...')
+        console.log('[AUTH::authorize] Password hash length:', user.password.length)
         let isValid: boolean
         try {
           isValid = await bcrypt.compare(password, user.password)
+          console.log('[AUTH::authorize] bcrypt.compare result:', isValid)
         } catch (err) {
-          console.error('[AUTH::authorize] bcrypt.compare failed:', err)
+          console.error('[AUTH::authorize] bcrypt.compare EXCEPTION:', err)
           return null
         }
 
@@ -90,7 +110,7 @@ export const authOptions: NextAuthConfig = {
           return null
         }
 
-        console.log('[AUTH::authorize] Authentication successful for:', email, 'role:', user.role)
+        console.log('[AUTH::authorize] *** AUTH SUCCESS *** for:', email, 'role:', user.role)
         return {
           id: user.id,
           email: user.email,
@@ -118,21 +138,51 @@ export const authOptions: NextAuthConfig = {
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log('[AUTH::jwt] Callback invoked:', {
+        hasToken: !!token,
+        hasUser: !!user,
+        hasAccount: !!account,
+        provider: account?.provider,
+        userId: user?.id,
+        tokenRole: token.role,
+      })
       if (user) {
         token.id = user.id as string
         token.role = (user as { role: UserRole }).role
+        console.log('[AUTH::jwt] Added user data to token:', { id: token.id, role: token.role })
       }
+      console.log('[AUTH::jwt] Returning token')
       return token
     },
     async session({ session, token }) {
+      console.log('[AUTH::session] Callback invoked:', {
+        hasSession: !!session,
+        hasToken: !!token,
+        tokenId: token.id,
+        tokenRole: token.role,
+        sessionUser: session.user?.email,
+      })
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as UserRole
+        console.log('[AUTH::session] Set session user:', { id: session.user.id, role: session.user.role })
       }
       return session
     },
+    async signIn({ user, account }) {
+      console.log('[AUTH::signIn] Callback invoked:', {
+        userId: user?.id,
+        email: user?.email,
+        provider: account?.provider,
+        hasAccount: !!account,
+      })
+      return true
+    },
   },
+  trustHost: true,
 }
+
+console.log('[AUTH::INIT] Auth options configured')
 
 export const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth(authOptions)
