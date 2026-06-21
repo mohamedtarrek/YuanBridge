@@ -6,6 +6,8 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface DashboardStats {
   totalUsers: number;
+  totalPremiumUsers: number;
+  totalFreeUsers: number;
   totalAdmins: number;
   totalStrategies: number;
   publishedStrategies: number;
@@ -54,10 +56,10 @@ export default function AdminDashboardPage() {
 
   const statCards = [
     { key: 'totalUsers', label: lang === 'ar' ? 'إجمالي المستخدمين' : 'Total Users', value: stats?.totalUsers || 0, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z', color: 'text-info', bg: 'bg-info/10' },
+    { key: 'totalPremiumUsers', label: lang === 'ar' ? 'المستخدمون المميزون' : 'Premium Users', value: stats?.totalPremiumUsers || 0, icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', color: 'text-accent-500', bg: 'bg-accent-500/10' },
+    { key: 'totalFreeUsers', label: lang === 'ar' ? 'المستخدمون المجانيون' : 'Free Users', value: stats?.totalFreeUsers || 0, icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', color: 'text-text-dim', bg: 'bg-white/5' },
     { key: 'activeSubscriptions', label: lang === 'ar' ? 'الاشتراكات النشطة' : 'Active Subs', value: stats?.activeSubscriptions || 0, icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', color: 'text-success', bg: 'bg-success/10' },
-    { key: 'revenueThisMonth', label: lang === 'ar' ? 'إيرادات هذا الشهر' : 'Monthly Revenue', value: `$${(stats?.revenueThisMonth || 0).toLocaleString()}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', color: 'text-accent-500', bg: 'bg-accent-500/10' },
-    { key: 'strategiesCreatedToday', label: lang === 'ar' ? 'استراتيجيات اليوم' : 'Today\'s Strategies', value: stats?.strategiesCreatedToday || 0, icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', color: 'text-warning', bg: 'bg-warning/10' },
-    { key: 'publishedStrategies', label: lang === 'ar' ? 'منشورة' : 'Published', value: stats?.publishedStrategies || 0, icon: 'M5 13l4 4L19 7', color: 'text-success', bg: 'bg-success/10' },
+    { key: 'publishedStrategies', label: lang === 'ar' ? 'استراتيجيات منشورة' : 'Published', value: stats?.publishedStrategies || 0, icon: 'M5 13l4 4L19 7', color: 'text-success', bg: 'bg-success/10' },
     { key: 'draftStrategies', label: lang === 'ar' ? 'مسودة' : 'Drafts', value: stats?.draftStrategies || 0, icon: 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z', color: 'text-text-dim', bg: 'bg-white/5' },
   ];
 

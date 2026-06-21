@@ -109,6 +109,28 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleSubscriptionChange = async (userId: string, plan: string, currentPlan: string) => {
+    if (plan === currentPlan) return;
+    const label = plan === 'PREMIUM' ? 'Premium' : 'Free';
+    if (!confirm(lang === 'ar' ? `تغيير الاشتراك إلى ${label}؟` : `Change subscription to ${label}?`)) return;
+    try {
+      const res = await fetch('/api/admin/subscriptions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, plan }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Subscription changed to ${plan}`);
+        fetchUsers();
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error('Failed to change subscription');
+    }
+  };
+
   const roleBadge = (role: string) => {
     const config: Record<string, string> = {
       SUPER_ADMIN: 'bg-accent-500/20 text-accent-500',
@@ -184,8 +206,22 @@ export default function AdminUsersPage() {
                       <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-success/10 text-success">Active</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-text-dim text-xs">
-                    {u.subscription ? `${u.subscription.plan} (${u.subscription.status})` : '—'}
+                  <td className="py-3 px-4">
+                    <select
+                      value={u.subscription?.plan || 'FREE'}
+                      onChange={e => handleSubscriptionChange(u.id, e.target.value, u.subscription?.plan || 'FREE')}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-semibold border-0 cursor-pointer ${
+                        u.subscription?.plan === 'PREMIUM' ? 'bg-accent-500/20 text-accent-500' : 'bg-white/5 text-text-dim'
+                      }`}
+                    >
+                      <option value="FREE">FREE</option>
+                      <option value="PREMIUM">PREMIUM</option>
+                    </select>
+                    {u.subscription?.status && (
+                      <span className={`ml-1 text-[10px] ${u.subscription.status === 'ACTIVE' ? 'text-success' : 'text-text-dim'}`}>
+                        ({u.subscription.status})
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-4 text-text-dim text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                   <td className="py-3 px-4 text-right">

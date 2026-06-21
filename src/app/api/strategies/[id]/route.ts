@@ -14,6 +14,15 @@ export async function GET(
     const session = await auth()
     const { id } = await params
 
+    let isPremiumUser = false
+    if (session?.user?.id) {
+      const sub = await prisma.subscription.findUnique({
+        where: { userId: session.user.id },
+        select: { plan: true, status: true },
+      })
+      isPremiumUser = sub?.plan === 'PREMIUM' && sub?.status === 'ACTIVE'
+    }
+
     const strategy = await prisma.strategy.findUnique({
       where: { id },
       include: {
@@ -35,9 +44,9 @@ export async function GET(
       )
     }
 
-    if (strategy.isPremium && (!session?.user?.id)) {
+    if (strategy.isPremium && !isPremiumUser) {
       return NextResponse.json(
-        { success: false, message: 'Forbidden. Premium subscription required.' },
+        { success: false, message: 'This strategy is available only for Premium members.', requiresPremium: true },
         { status: 403 }
       )
     }

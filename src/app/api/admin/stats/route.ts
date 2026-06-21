@@ -22,6 +22,8 @@ export async function GET() {
 
     const [
       totalUsers,
+      totalPremiumUsers,
+      totalFreeUsers,
       totalAdmins,
       totalStrategies,
       publishedStrategies,
@@ -37,6 +39,8 @@ export async function GET() {
       totalPremiumStrategies,
     ] = await Promise.all([
       prisma.user.count(),
+      prisma.user.count({ where: { subscription: { plan: 'PREMIUM' } } }),
+      prisma.user.count({ where: { subscription: { plan: 'FREE' } } }),
       prisma.user.count({ where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } } }),
       prisma.strategy.count(),
       prisma.strategy.count({ where: { status: 'PUBLISHED' } }),
@@ -66,6 +70,8 @@ export async function GET() {
       success: true,
       stats: {
         totalUsers,
+        totalPremiumUsers,
+        totalFreeUsers,
         totalAdmins,
         totalStrategies,
         publishedStrategies,

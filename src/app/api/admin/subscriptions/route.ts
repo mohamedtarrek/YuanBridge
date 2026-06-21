@@ -65,3 +65,85 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const rateCheck = await rateLimit(5, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
+
+    const session = await auth()
+    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Super Admin access required.' },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+    const { userId, plan, endsAt } = body
+
+    if (!userId || !plan) {
+      return NextResponse.json(
+        { success: false, message: 'userId and plan are required.' },
+        { status: 400 }
+      )
+    }
+
+    if (plan !== 'FREE' && plan !== 'PREMIUM') {
+      return NextResponse.json(
+        { success: false, message: 'Plan must be FREE or PREMIUM.' },
+        { status: 400 }
+      )
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found.' },
+        { status: 404 }
+      )
+    }
+
+    const existingSub = await prisma.subscription.findUnique({ where: { userId } })
+
+    let subscription
+    if (existingSub) {
+      subscription = await prisma.subscription.update({
+        where: { userId },
+        data: {
+          plan,
+          status: 'ACTIVE',
+          endsAt: endsAt ? new Date(endsAt) : plan === 'FREE' ? null : existingSub.endsAt,
+          cancelledAt: plan === 'FREE' ? new Date() : null,
+        },
+      })
+    } else {
+      subscription = await prisma.subscription.create({
+        data: {
+          userId,
+          plan,
+          status: 'ACTIVE',
+          endsAt: endsAt ? new Date(endsAt) : null,
+        },
+      })
+    }
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: session.user.id,
+        action: 'CHANGE_SUBSCRIPTION',
+        targetId: userId,
+        targetType: 'user',
+        details: `Changed subscription for ${user.email} to ${plan}${endsAt ? ` until ${new Date(endsAt).toLocaleDateString()}` : ''}`,
+      },
+    })
+
+    return NextResponse.json({ success: true, subscription })
+  } catch (error) {
+    console.error('Admin subscription change error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error.' },
+      { status: 500 }
+    )
+  }
+}

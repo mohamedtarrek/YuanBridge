@@ -6,17 +6,32 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { LanguageSwitch } from '@/components/shared/LanguageSwitch';
 import { Button } from '@/components/ui/Button';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export function Navbar() {
   const { t, lang } = useLanguage();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isLoggedIn = status === 'authenticated';
+  const user = session?.user;
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    toast.success(lang === 'ar' ? 'تم تسجيل الخروج' : 'Logged out');
+    router.push(`/${lang}`);
+    router.refresh();
+  };
 
   const links = [
     { href: `/${lang}`, label: t('nav.home') },
@@ -62,15 +77,45 @@ export function Navbar() {
             <ThemeToggle />
             <LanguageSwitch />
             <div className="hidden md:flex items-center gap-2">
-              <a
-                href={`/${lang}/login`}
-                className="px-4 py-2 text-sm text-text-muted hover:text-text transition-all duration-300"
-              >
-                {t('nav.login')}
-              </a>
-              <Button variant="primary" size="sm" href={`/${lang}/register`}>
-                {t('nav.register')}
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  {isAdmin && (
+                    <a
+                      href={`/${lang}/admin`}
+                      className="px-3 py-2 text-sm text-accent-500 hover:text-accent-400 rounded-lg hover:bg-accent-500/10 transition-all duration-300 font-medium"
+                    >
+                      {lang === 'ar' ? 'لوحة الإدارة' : 'Admin'}
+                    </a>
+                  )}
+                  <a
+                    href={`/${lang}/dashboard`}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-text rounded-lg hover:bg-white/5 transition-all duration-300"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-accent-500/20 text-accent-500 text-xs font-bold flex items-center justify-center">
+                      {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <span className="max-w-[100px] truncate">{user?.name || user?.email?.split('@')[0]}</span>
+                  </a>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 text-sm text-text-muted hover:text-danger transition-all duration-300"
+                  >
+                    {lang === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={`/${lang}/login`}
+                    className="px-4 py-2 text-sm text-text-muted hover:text-text transition-all duration-300"
+                  >
+                    {t('nav.login')}
+                  </a>
+                  <Button variant="primary" size="sm" href={`/${lang}/register`}>
+                    {t('nav.register')}
+                  </Button>
+                </>
+              )}
             </div>
 
             <button
@@ -110,20 +155,54 @@ export function Navbar() {
                 </a>
               ))}
               <div className="h-px bg-border my-2" />
-              <a
-                href={`/${lang}/login`}
-                onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 text-text-muted hover:text-text rounded-lg hover:bg-white/5 transition-all"
-              >
-                {t('nav.login')}
-              </a>
-              <a
-                href={`/${lang}/register`}
-                onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 text-accent-500 font-medium rounded-lg hover:bg-accent-500/5 transition-all"
-              >
-                {t('nav.register')}
-              </a>
+              {isLoggedIn ? (
+                <>
+                  {isAdmin && (
+                    <a
+                      href={`/${lang}/admin`}
+                      onClick={() => setMobileOpen(false)}
+                      className="px-4 py-3 text-accent-500 font-medium rounded-lg hover:bg-accent-500/5 transition-all"
+                    >
+                      {lang === 'ar' ? 'لوحة الإدارة' : 'Admin Dashboard'}
+                    </a>
+                  )}
+                  <a
+                    href={`/${lang}/dashboard`}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-4 py-3 text-text-muted hover:text-text rounded-lg hover:bg-white/5 transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-accent-500/20 text-accent-500 text-xs font-bold flex items-center justify-center">
+                        {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
+                      </div>
+                      <span>{user?.name || user?.email || lang === 'ar' ? 'حسابي' : 'My Account'}</span>
+                    </div>
+                  </a>
+                  <button
+                    onClick={() => { setMobileOpen(false); handleLogout(); }}
+                    className="px-4 py-3 text-danger font-medium rounded-lg hover:bg-danger/5 transition-all text-left"
+                  >
+                    {lang === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={`/${lang}/login`}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-4 py-3 text-text-muted hover:text-text rounded-lg hover:bg-white/5 transition-all"
+                  >
+                    {t('nav.login')}
+                  </a>
+                  <a
+                    href={`/${lang}/register`}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-4 py-3 text-accent-500 font-medium rounded-lg hover:bg-accent-500/5 transition-all"
+                  >
+                    {t('nav.register')}
+                  </a>
+                </>
+              )}
             </div>
           </motion.div>
         )}

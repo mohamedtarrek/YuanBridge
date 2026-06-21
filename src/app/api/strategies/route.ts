@@ -10,7 +10,14 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    const isPremium = false
+    let isPremium = false
+    if (session?.user?.id) {
+      const sub = await prisma.subscription.findUnique({
+        where: { userId: session.user.id },
+        select: { plan: true, status: true },
+      })
+      isPremium = sub?.plan === 'PREMIUM' && sub?.status === 'ACTIVE'
+    }
 
     const searchParams = request.nextUrl.searchParams
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))

@@ -87,9 +87,9 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
-        { success: false, message: 'Forbidden. Admin access required.' },
+        { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
       )
     }
