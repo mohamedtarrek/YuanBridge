@@ -22,7 +22,7 @@ export async function monitorPublishedStrategies(): Promise<void> {
 
   try {
     const dbStrategies = await prisma.strategy.findMany({
-      where: { isPublished: true },
+      where: { status: 'PUBLISHED' },
       orderBy: { publishedAt: 'desc' },
     })
 

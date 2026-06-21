@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { nextAuthAuth } from '@/lib/auth/auth-options';
 
 const LOCALE_COOKIE = 'yb_lang';
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -19,6 +20,22 @@ export function proxy(request: NextRequest) {
 
   const localeCookie = request.cookies.get(LOCALE_COOKIE)?.value;
   const hasLocale = pathname.startsWith('/ar') || pathname.startsWith('/en');
+
+  // Admin route protection
+  const isAdminPage = /^\/(ar|en)\/admin/.test(pathname);
+  if (isAdminPage) {
+    const session = await nextAuthAuth();
+
+    if (!session?.user) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
 
   if (!hasLocale) {
     const preferredLocale = localeCookie || 'ar';

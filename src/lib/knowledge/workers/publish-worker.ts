@@ -51,7 +51,7 @@ export async function runPublishWorker(): Promise<PublishWorkerResult> {
         validatedCount++
         const validatedStrategy = await runValidationPipeline(idea)
 
-        if (validatedStrategy?.isPublished) {
+        if (validatedStrategy?.status === 'PUBLISHED') {
           publishedCount++
           console.log(`[PublishWorker] Published strategy: "${validatedStrategy.title}"`)
         } else {

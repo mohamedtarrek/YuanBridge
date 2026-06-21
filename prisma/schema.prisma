@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 enum SubscriptionPlan {
   FREE
   PREMIUM
@@ -34,6 +40,12 @@ enum PaymentProvider {
 enum StrategyDirection {
   BUY
   SELL
+}
+
+enum StrategyStatus {
+  DRAFT
+  PUBLISHED
+  FEATURED
 }
 
 enum RiskLevel {
@@ -69,9 +81,25 @@ enum NotificationType {
   ALERT
 }
 
-enum UserRole {
-  USER
-  ADMIN
+enum AdminAction {
+  CREATE_STRATEGY
+  UPDATE_STRATEGY
+  DELETE_STRATEGY
+  CREATE_USER
+  UPDATE_USER
+  DELETE_USER
+  BAN_USER
+  UNBAN_USER
+  CREATE_ADMIN
+  DELETE_ADMIN
+  SUSPEND_ADMIN
+  ACTIVATE_ADMIN
+  CHANGE_USER_ROLE
+  RESET_PASSWORD
+  CREATE_CATEGORY
+  UPDATE_CATEGORY
+  DELETE_CATEGORY
+  UPDATE_SETTINGS
 }
 
 model Account {
@@ -120,6 +148,9 @@ model User {
   role            UserRole         @default(USER)
   language        String           @default("ar")
   theme           String           @default("dark")
+  isBanned        Boolean          @default(false)
+  bannedAt        DateTime?
+  banReason       String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -136,8 +167,26 @@ model User {
   savedStrategies SavedStrategy[]
   notifications  Notification[]
   loginHistory   LoginHistory[]
+  strategies     Strategy[]
+  adminLogs      AdminLog[]
+  adminProfile   AdminProfile?
 
   @@map("users")
+}
+
+model AdminProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  isActive      Boolean   @default(true)
+  isPermanent   Boolean   @default(true)
+  expiresAt     DateTime?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_profiles")
 }
 
 model Subscription {
@@ -179,29 +228,62 @@ model Payment {
   @@map("payments")
 }
 
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  nameAr    String
+  slug      String    @unique
+  description String?
+  descriptionAr String?
+  image     String?
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  strategies Strategy[]
+
+  @@map("categories")
+}
+
 model Strategy {
   id                  String             @id @default(cuid())
   title               String
-  titleAr             String
+  titleAr             String?
+  slug                String?            @unique
+  description         String?
+  descriptionAr       String?
   currencyPair        String
   direction           StrategyDirection
   entryPrice          Float
   stopLoss            Float
   takeProfit1         Float
-  takeProfit2         Float
+  takeProfit2         Float?
+  takeProfit3         Float?
   risk                RiskLevel
+  riskPercent         Float?
+  riskReward          Float?
   confidence          Float
-  summary             String
-  summaryAr           String
+  status              StrategyStatus     @default(DRAFT)
   isPremium           Boolean            @default(false)
-  isPublished         Boolean            @default(false)
-  isApproved          Boolean            @default(false)
+  image               String?
+  tags                String?
+  publishedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  createdById String?
+  createdBy  User?     @relation(fields: [createdById], references: [id])
+
+  summary             String?
+  summaryAr           String?
   technicalAnalysis   String?
   technicalAnalysisAr String?
   fundamentalAnalysis  String?
   fundamentalAnalysisAr String?
-  trend               TrendDirection
+  trend               TrendDirection?
   support1            Float?
   support2            Float?
   support3            Float?
@@ -221,16 +303,19 @@ model Strategy {
   bbUpper             Float?
   bbMiddle            Float?
   bbLower             Float?
+  adx                 Float?
+  cci                 Float?
 
   notes               String?
   notesAr             String?
   tradesAnalyzed      Int                @default(0)
+  winRate             Float?
+  analysis            String?
+  tradingRules        String?
+
   aiModel             String?
   aiProvider          AIProvider?
   aiJobId             String?
-  publishedAt         DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
 
   favorites     Favorite[]
   savedBy       SavedStrategy[]
@@ -241,8 +326,9 @@ model Strategy {
   @@index([direction])
   @@index([risk])
   @@index([confidence])
+  @@index([status])
   @@index([isPremium])
-  @@index([isPublished])
+  @@index([publishedAt])
   @@index([createdAt])
   @@map("strategies")
 }
@@ -399,4 +485,22 @@ model Report {
   createdAt   DateTime @default(now())
 
   @@map("reports")
+}
+
+model AdminLog {
+  id         String       @id @default(cuid())
+  adminId    String
+  action     AdminAction
+  targetId   String?
+  targetType String?
+  details    String?
+  ip         String?
+  createdAt  DateTime     @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_logs")
 }

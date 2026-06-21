@@ -8,6 +8,28 @@ import type { NextAuthConfig } from 'next-auth'
 import { prisma } from '@/lib/db'
 import type { UserRole } from '@prisma/client'
 
+declare module 'next-auth' {
+  interface User {
+    role?: UserRole
+  }
+  interface Session {
+    user: {
+      id: string
+      role: UserRole
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string
+    role: UserRole
+  }
+}
+
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as NextAuthConfig['adapter'],
   providers: [
@@ -30,6 +52,10 @@ export const authOptions: NextAuthConfig = {
         })
 
         if (!user || !user.password) {
+          return null
+        }
+
+        if (user.isBanned) {
           return null
         }
 
@@ -76,7 +102,7 @@ export const authOptions: NextAuthConfig = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as string
+        session.user.role = token.role as UserRole
       }
       return session
     },

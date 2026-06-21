@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  generateStrategiesJob,
   expireSubscriptionsJob,
   cleanupJob,
 } from '@/lib/scheduler'
@@ -45,10 +44,8 @@ export async function GET(request: NextRequest) {
 
   try {
     switch (job) {
-      case 'strategies': {
-        await generateStrategiesJob()
-        return NextResponse.json({ success: true, message: 'Strategies generated' })
-      }
+      case 'strategies':
+        return NextResponse.json({ success: true, message: 'Auto strategy generation is disabled. Strategies are now created manually via the Admin Dashboard.' })
 
       case 'expire': {
         await expireSubscriptionsJob()

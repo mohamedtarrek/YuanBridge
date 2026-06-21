@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    const isPremium = session?.user?.role === 'PREMIUM' || false
+    const isPremium = false
 
     const searchParams = request.nextUrl.searchParams
     const q = searchParams.get('q')
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') as 'newest' | 'oldest' | 'highest_confidence' | 'lowest_confidence' | null
 
     const where: Prisma.StrategyWhereInput = {
-      isPublished: true,
+      status: 'PUBLISHED',
     }
 
     if (!isPremium || excludePremium === 'true') {

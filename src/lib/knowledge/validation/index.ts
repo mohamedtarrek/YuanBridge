@@ -211,8 +211,7 @@ async function buildStrategyFromRules(
     summary: idea.summary,
     summaryAr: idea.summary,
     isPremium: false,
-    isPublished: false,
-    isApproved: false,
+    status: 'DRAFT',
     trend: 'Neutral',
     support: [entryPrice * 0.98, entryPrice * 0.96, entryPrice * 0.94],
     resistance: [entryPrice * 1.02, entryPrice * 1.04, entryPrice * 1.06],
@@ -337,8 +336,7 @@ async function publishStrategy(strategy: Partial<ValidatedStrategy>): Promise<vo
       summary: strategy.summary!,
       summaryAr: strategy.summaryAr!,
       isPremium: strategy.isPremium!,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       trend: strategy.trend! as any,
       support1: strategy.support?.[0] ?? null,
       support2: strategy.support?.[1] ?? null,
@@ -414,9 +412,8 @@ export async function runValidationPipeline(idea: TradingIdea): Promise<Validate
       ...partialStrategy as ValidatedStrategy,
       confidence,
       validationScore,
-      isApproved,
       isPremium,
-      isPublished: false,
+      status: isApproved ? 'PUBLISHED' : 'DRAFT',
       backtestResult,
       forwardTestResult,
     }
@@ -424,7 +421,6 @@ export async function runValidationPipeline(idea: TradingIdea): Promise<Validate
     if (isApproved) {
       const stage9Start = new Date()
       await publishStrategy(strategy)
-      strategy.isPublished = true
       logs.push(logStage('publish', stage9Start))
       console.log(`[Validation] Published strategy "${strategy.title}" with score ${validationScore}`)
     } else {

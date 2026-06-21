@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { rateLimit, validateInput, strategySchema } from '@/lib/security'
+import { rateLimit } from '@/lib/security'
 import type { Prisma } from '@prisma/client'
-import { generateStrategy } from '@/lib/ai/engine'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +10,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    const isPremium = session?.user?.role === 'PREMIUM' || false
+    const isPremium = false
 
     const searchParams = request.nextUrl.searchParams
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
@@ -22,10 +21,9 @@ export async function GET(request: NextRequest) {
     const currencyPair = searchParams.get('currencyPair')
     const search = searchParams.get('search')
     const sort = searchParams.get('sort') as 'newest' | 'oldest' | 'highest_confidence' | 'lowest_confidence' | null
-    const approved = searchParams.get('approved')
 
     const where: Prisma.StrategyWhereInput = {
-      isPublished: true,
+      status: 'PUBLISHED',
     }
 
     if (!isPremium) {
@@ -54,10 +52,6 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    if (approved !== null) {
-      where.isApproved = approved === 'true'
-    }
-
     let orderBy: Prisma.StrategyOrderByWithRelationInput = { createdAt: 'desc' }
     switch (sort) {
       case 'oldest':
@@ -77,6 +71,9 @@ export async function GET(request: NextRequest) {
         orderBy,
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          category: { select: { id: true, name: true, nameAr: true } },
+        },
       }),
       prisma.strategy.count({ where }),
     ])
@@ -89,68 +86,6 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Strategies list error:', error)
-    return NextResponse.json(
-      { success: false, message: 'Internal server error.' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const rateCheck = await rateLimit(10, 60_000)
-    if (rateCheck instanceof NextResponse) return rateCheck
-
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized.' },
-        { status: 401 }
-      )
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, message: 'Forbidden. Admin access required.' },
-        { status: 403 }
-      )
-    }
-
-    const body = await request.json()
-    const validation = validateInput(strategySchema, body)
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, errors: validation.errors },
-        { status: 400 }
-      )
-    }
-
-    const data = validation.data
-    const strategy = await prisma.strategy.create({
-      data: {
-        title: data.title,
-        titleAr: data.titleAr,
-        currencyPair: data.currencyPair,
-        direction: data.direction as any,
-        entryPrice: data.entryPrice,
-        stopLoss: data.stopLoss,
-        takeProfit1: data.takeProfit1,
-        takeProfit2: data.takeProfit2,
-        risk: data.risk as any,
-        confidence: data.confidence,
-        summary: data.summary,
-        summaryAr: data.summaryAr,
-        isPremium: data.isPremium,
-        trend: data.trend as any,
-        isPublished: true,
-        isApproved: true,
-        publishedAt: new Date(),
-      },
-    })
-
-    return NextResponse.json({ success: true, strategy }, { status: 201 })
-  } catch (error) {
-    console.error('Strategy create error:', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error.' },
       { status: 500 }

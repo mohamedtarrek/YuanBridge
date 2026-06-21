@@ -24,7 +24,7 @@ export async function GET() {
         },
       }),
       prisma.strategy.count({
-        where: { isPublished: true },
+        where: { status: 'PUBLISHED' },
       }),
       Promise.resolve(getAllWorkerStatuses()),
     ])

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
         { status: 403 }
@@ -18,8 +18,11 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10', 10)))
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)))
     const search = searchParams.get('search')
+    const role = searchParams.get('role')
+    const isBanned = searchParams.get('isBanned')
+    const sort = searchParams.get('sort') || 'newest'
 
     const where: Record<string, unknown> = {}
     if (search) {
@@ -28,11 +31,18 @@ export async function GET(request: NextRequest) {
         { email: { contains: search } },
       ]
     }
+    if (role) where.role = role
+    if (isBanned !== null) where.isBanned = isBanned === 'true'
+
+    let orderBy: Record<string, string> = { createdAt: 'desc' }
+    if (sort === 'oldest') orderBy = { createdAt: 'asc' }
+    if (sort === 'name_asc') orderBy = { name: 'asc' }
+    if (sort === 'name_desc') orderBy = { name: 'desc' }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where: where as any,
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderBy as any,
         skip: (page - 1) * limit,
         take: limit,
         include: { subscription: true },
@@ -67,9 +77,9 @@ export async function DELETE(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
-        { success: false, message: 'Forbidden. Admin access required.' },
+        { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
       )
     }
@@ -99,6 +109,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.user.delete({ where: { id: userId } })
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: session.user.id,
+        action: 'DELETE_USER',
+        targetId: userId,
+        targetType: 'user',
+        details: `Deleted user: ${existing.email}`,
+      },
+    })
 
     return NextResponse.json({ success: true, message: 'User deleted.' })
   } catch (error) {

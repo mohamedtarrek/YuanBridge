@@ -103,8 +103,7 @@ export async function buildStrategy(
       summary: '',
       summaryAr: '',
       isPremium: false,
-      isPublished: false,
-      isApproved: false,
+      status: 'DRAFT',
       trend: direction === 'BUY' ? 'Bullish' : 'Bearish' as 'Bullish' | 'Bearish' | 'Neutral',
       support: [
         +(entryPrice - atr * 1).toFixed(5),

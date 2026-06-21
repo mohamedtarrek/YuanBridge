@@ -23,7 +23,7 @@ function calculateRankingScore(strategy: {
 
 export async function rankStrategies(): Promise<RankedStrategy[]> {
   const strategies = await prisma.strategy.findMany({
-    where: { isPublished: true },
+      where: { status: 'PUBLISHED' },
     include: {
       _count: {
         select: { savedBy: true, favorites: true },
@@ -34,7 +34,7 @@ export async function rankStrategies(): Promise<RankedStrategy[]> {
 
   const now = Date.now()
 
-  const ranked: RankedStrategy[] = strategies.map(s => {
+  const ranked: RankedStrategy[] = (strategies as any[]).map(s => {
     const age = (now - s.createdAt.getTime()) / (1000 * 60 * 60 * 24)
 
     const savedCount = s._count.savedBy + s._count.favorites
@@ -62,8 +62,7 @@ export async function rankStrategies(): Promise<RankedStrategy[]> {
       summary: s.summary,
       summaryAr: s.summaryAr,
       isPremium: s.isPremium,
-      isPublished: s.isPublished,
-      isApproved: s.isApproved,
+      status: s.status as any,
       trend: (s.trend || 'Neutral') as 'Bullish' | 'Bearish' | 'Neutral',
       support: [s.support1, s.support2, s.support3].filter((v): v is number => v !== null),
       resistance: [s.resistance1, s.resistance2, s.resistance3].filter((v): v is number => v !== null),
@@ -123,7 +122,7 @@ export async function getTrendingStrategies(): Promise<RankedStrategy[]> {
   const ranked = await rankStrategies()
 
   const trending = ranked.filter(s => {
-    const ageInDays = (Date.now() - new Date(s.isPublished ? 0 : 0).getTime()) / (1000 * 60 * 60 * 24)
+    const ageInDays = (Date.now() - new Date(s.status === 'PUBLISHED' ? 0 : 0).getTime()) / (1000 * 60 * 60 * 24)
     return ageInDays < 7
   })
 

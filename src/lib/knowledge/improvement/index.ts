@@ -63,7 +63,7 @@ export async function recalculateAllScores(): Promise<void> {
   console.log('[Improvement] Recalculating all strategy scores...')
 
   const strategies = await prisma.strategy.findMany({
-    where: { isPublished: true },
+    where: { status: 'PUBLISHED' },
   })
 
   for (const strategy of strategies) {
@@ -102,7 +102,7 @@ export async function removeUnderperforming(minimumScore: number): Promise<strin
   try {
     const underperforming = await prisma.strategy.findMany({
       where: {
-        isPublished: true,
+        status: 'PUBLISHED',
         confidence: { lt: minimumScore },
       },
       select: { id: true, title: true },
@@ -113,8 +113,7 @@ export async function removeUnderperforming(minimumScore: number): Promise<strin
         await prisma.strategy.update({
           where: { id: strategy.id },
           data: {
-            isPublished: false,
-            isApproved: false,
+            status: 'DRAFT',
           },
         })
         removed.push(strategy.id)
@@ -169,7 +168,7 @@ export async function adjustConfidence(
 
 export async function getTopPerforming(limit: number): Promise<ValidatedStrategy[]> {
   const strategies = await prisma.strategy.findMany({
-    where: { isPublished: true },
+    where: { status: 'PUBLISHED' },
     orderBy: { confidence: 'desc' },
     take: limit,
   })
@@ -179,7 +178,7 @@ export async function getTopPerforming(limit: number): Promise<ValidatedStrategy
 
 export async function getDeclining(): Promise<ValidatedStrategy[]> {
   const strategies = await prisma.strategy.findMany({
-    where: { isPublished: true },
+    where: { status: 'PUBLISHED' },
     orderBy: { updatedAt: 'desc' },
   })
 
@@ -195,53 +194,12 @@ export async function getDeclining(): Promise<ValidatedStrategy[]> {
   return declining
 }
 
-function mapDbStrategyToValidated(s: {
-  id: string
-  title: string
-  titleAr: string
-  currencyPair: string
-  direction: string
-  entryPrice: number
-  stopLoss: number
-  takeProfit1: number
-  takeProfit2: number
-  risk: string
-  confidence: number
-  summary: string
-  summaryAr: string
-  isPremium: boolean
-  isPublished: boolean
-  isApproved: boolean
-  trend: string | null
-  support1: number | null
-  support2: number | null
-  support3: number | null
-  resistance1: number | null
-  resistance2: number | null
-  resistance3: number | null
-  rsi: number | null
-  emaFast: number | null
-  emaSlow: number | null
-  smaPeriod: number | null
-  smaValue: number | null
-  atr: number | null
-  bbUpper: number | null
-  bbMiddle: number | null
-  bbLower: number | null
-  notes: string | null
-  notesAr: string | null
-  tradesAnalyzed: number
-  aiModel: string | null
-  technicalAnalysis: string | null
-  technicalAnalysisAr: string | null
-  fundamentalAnalysis: string | null
-  fundamentalAnalysisAr: string | null
-}): ValidatedStrategy {
+function mapDbStrategyToValidated(s: any): ValidatedStrategy {
   return {
     id: s.id,
     ideaId: s.id,
     title: s.title,
-    titleAr: s.titleAr,
+    titleAr: s.titleAr || s.title,
     currencyPair: s.currencyPair,
     direction: s.direction as 'BUY' | 'SELL',
     entryPrice: s.entryPrice,
@@ -250,11 +208,10 @@ function mapDbStrategyToValidated(s: {
     takeProfit2: s.takeProfit2,
     risk: s.risk as 'Low' | 'Medium' | 'High',
     confidence: s.confidence,
-    summary: s.summary,
-    summaryAr: s.summaryAr,
+    summary: s.summary || '',
+    summaryAr: s.summaryAr || '',
     isPremium: s.isPremium,
-    isPublished: s.isPublished,
-    isApproved: s.isApproved,
+    status: s.status,
     trend: (s.trend || 'Neutral') as 'Bullish' | 'Bearish' | 'Neutral',
     support: [s.support1, s.support2, s.support3].filter((v): v is number => v !== null),
     resistance: [s.resistance1, s.resistance2, s.resistance3].filter((v): v is number => v !== null),

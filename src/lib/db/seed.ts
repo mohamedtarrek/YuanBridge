@@ -11,18 +11,28 @@ async function main() {
     where: { email: 'admin@yuanbridge.com' },
     update: {},
     create: {
-      name: 'Admin',
-      nameAr: 'مدير',
+      name: 'Super Admin',
+      nameAr: 'مدير عام',
       email: 'admin@yuanbridge.com',
       password: hashedPassword,
-      role: 'ADMIN',
+      role: 'SUPER_ADMIN',
       language: 'en',
       theme: 'dark',
       emailNotifications: true,
       pushNotifications: true,
     },
   })
-  console.log(`  ✓ Admin user created (${admin.email})`)
+
+  await prisma.adminProfile.upsert({
+    where: { userId: admin.id },
+    update: {},
+    create: {
+      userId: admin.id,
+      isActive: true,
+      isPermanent: true,
+    },
+  })
+  console.log(`  ✓ Super Admin user created (${admin.email})`)
 
   // ── Sample Users ────────────────────────────────────────────────────────
   const userPassword = await bcrypt.hash('User1234!', 12)
@@ -130,8 +140,8 @@ async function main() {
     fundamentalAnalysis: string
     fundamentalAnalysisAr: string
     isPremium: boolean
-    isPublished: boolean
-    isApproved: boolean
+    status: 'DRAFT' | 'PUBLISHED' | 'FEATURED'
+    slug: string
     rsi: number
     macdValue: number
     macdSignal: number
@@ -161,6 +171,7 @@ async function main() {
     {
       title: 'EUR/USD Bullish Breakout',
       titleAr: 'انفراج صاعد لليورو مقابل الدولار',
+      slug: 'eur-usd-bullish-breakout',
       currencyPair: 'EUR/USD',
       direction: 'BUY',
       entryPrice: 1.0875,
@@ -177,8 +188,7 @@ async function main() {
       fundamentalAnalysis: 'ECB hawkish stance supports EUR. US economic data mixed with weaker retail sales. Interest rate differential narrowing in favor of EUR.',
       fundamentalAnalysisAr: 'موقف البنك المركزي الأوروبي المتشدد يدعم اليورو. بيانات اقتصادية أمريكية مختلطة مع مبيعات تجزئة أضعف. فجوة أسعار الفائدة تضيق لصالح اليورو.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 62,
       macdValue: 0.0012,
       macdSignal: 0.0008,
@@ -206,6 +216,7 @@ async function main() {
     {
       title: 'GBP/USD Bearish Reversal',
       titleAr: 'انعكاس هابط للجنيه مقابل الدولار',
+      slug: 'gbp-usd-bearish-reversal',
       currencyPair: 'GBP/USD',
       direction: 'SELL',
       entryPrice: 1.2650,
@@ -222,8 +233,7 @@ async function main() {
       fundamentalAnalysis: 'BoE expected to cut rates sooner than anticipated. UK GDP growth slowing. Services PMI contracting.',
       fundamentalAnalysisAr: 'من المتوقع أن يخفض بنك إنجلترا أسعار الفائدة في وقت أقرب من المتوقع. نمو الناتج المحلي الإجمالي للمملكة المتحدة يتباطأ. مؤشر مديري المشتريات الخدمي في انكماش.',
       isPremium: true,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 68,
       macdValue: -0.0008,
       macdSignal: -0.0003,
@@ -251,6 +261,7 @@ async function main() {
     {
       title: 'USD/JPY Range Trade',
       titleAr: 'تداول النطاق للدولار مقابل الين',
+      slug: 'usd-jpy-range-trade',
       currencyPair: 'USD/JPY',
       direction: 'SELL',
       entryPrice: 149.80,
@@ -267,8 +278,7 @@ async function main() {
       fundamentalAnalysis: 'BOJ maintains ultra-loose policy but intervention warnings persist. US Treasury yields stabilizing. Carry trade dynamics support JPY shorts.',
       fundamentalAnalysisAr: 'بنك اليابان يحافظ على سياسة التيسير الفائقة لكن تحذيرات التدخل مستمرة. عوائد الخزانة الأمريكية تستقر. ديناميكيات تجارة المناقلة تدعم بيع الين.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 55,
       macdValue: -0.15,
       macdSignal: -0.08,
@@ -296,6 +306,7 @@ async function main() {
     {
       title: 'AUD/USD Break and Retest',
       titleAr: 'اختراق وإعادة اختبار للدولار الأسترالي',
+      slug: 'aud-usd-break-and-retest',
       currencyPair: 'AUD/USD',
       direction: 'BUY',
       entryPrice: 0.6580,
@@ -312,8 +323,7 @@ async function main() {
       fundamentalAnalysis: 'RBA hawkish hold supports AUD. Iron ore prices rallying. China stimulus measures boosting risk sentiment.',
       fundamentalAnalysisAr: 'تثبيت البنك الاحتياطي الأسترالي المتشدد يدعم الدولار الأسترالي. أسعار خام الحديد ترتفع. إجراءات التحفيز الصينية تعزز معنويات المخاطرة.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 58,
       macdValue: 0.0006,
       macdSignal: 0.0003,
@@ -341,6 +351,7 @@ async function main() {
     {
       title: 'USD/CAD Bearish Momentum',
       titleAr: 'زخم هابط للدولار مقابل الدولار الكندي',
+      slug: 'usd-cad-bearish-momentum',
       currencyPair: 'USD/CAD',
       direction: 'SELL',
       entryPrice: 1.3620,
@@ -357,8 +368,7 @@ async function main() {
       fundamentalAnalysis: 'BoC hold with hawkish tone. Oil prices at multi-month highs benefiting Canadian economy. US dollar weakening broadly.',
       fundamentalAnalysisAr: 'تثبيت بنك كندا بنبرة متشددة. أسعار النفط عند أعلى مستوياتها في عدة أشهر تفيد الاقتصاد الكندي. تراجع الدولار الأمريكي على نطاق واسع.',
       isPremium: true,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 42,
       macdValue: -0.0015,
       macdSignal: -0.0008,
@@ -386,6 +396,7 @@ async function main() {
     {
       title: 'NZD/USD Support Bounce',
       titleAr: 'ارتداد من الدعم للدولار النيوزيلندي',
+      slug: 'nzd-usd-support-bounce',
       currencyPair: 'NZD/USD',
       direction: 'BUY',
       entryPrice: 0.6080,
@@ -402,8 +413,7 @@ async function main() {
       fundamentalAnalysis: 'RBNZ rate decision next week. Dairy prices stabilizing. Risk sentiment improving broadly.',
       fundamentalAnalysisAr: 'قرار سعر الفائدة للبنك الاحتياطي النيوزيلندي الأسبوع المقبل. أسعار الألبان تستقر. معنويات المخاطرة تتحسن على نطاق واسع.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 35,
       macdValue: -0.0004,
       macdSignal: -0.0007,
@@ -431,6 +441,7 @@ async function main() {
     {
       title: 'EUR/GBP Momentum Breakout',
       titleAr: 'اختراق الزخم لليورو مقابل الجنيه',
+      slug: 'eur-gbp-momentum-breakout',
       currencyPair: 'EUR/GBP',
       direction: 'BUY',
       entryPrice: 0.8580,
@@ -447,8 +458,7 @@ async function main() {
       fundamentalAnalysis: 'ECB hawkish vs BoE dovish expectations. Eurozone inflation sticky. UK economy showing weakness.',
       fundamentalAnalysisAr: 'توقعات البنك المركزي الأوروبي المتشددة مقابل توقعات بنك إنجلترا المتساهلة. تضخم منطقة اليورو ثابت. الاقتصاد البريطاني يظهر ضعفًا.',
       isPremium: true,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 60,
       macdValue: 0.0009,
       macdSignal: 0.0005,
@@ -476,6 +486,7 @@ async function main() {
     {
       title: 'USD/CHF Trend Continuation',
       titleAr: 'استمرار الاتجاه للدولار مقابل الفرنك',
+      slug: 'usd-chf-trend-continuation',
       currencyPair: 'USD/CHF',
       direction: 'SELL',
       entryPrice: 0.8820,
@@ -492,8 +503,7 @@ async function main() {
       fundamentalAnalysis: 'Swiss franc strengthening on safe-haven flows. SNB may intervene if USD/CHF drops too fast. US dollar weakness persists.',
       fundamentalAnalysisAr: 'الفرنك السويسري يقوي بفضل تدفقات الملاذ الآمن. قد يتدخل البنك السويسري إذا انخفض زوج الدولار/فرنك بسرعة كبيرة. ضعف الدولار الأمريكي مستمر.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 38,
       macdValue: -0.0010,
       macdSignal: -0.0006,
@@ -521,6 +531,7 @@ async function main() {
     {
       title: 'GBP/JPY Breakout Play',
       titleAr: 'صفقة اختراق للجنيه مقابل الين',
+      slug: 'gbp-jpy-breakout-play',
       currencyPair: 'GBP/JPY',
       direction: 'BUY',
       entryPrice: 189.50,
@@ -537,8 +548,7 @@ async function main() {
       fundamentalAnalysis: 'GBP gaining on rate expectations. JPY under pressure from BOJ policy. Cross pair highly sensitive to risk sentiment.',
       fundamentalAnalysisAr: 'الجنيه يرتفع بفضل توقعات أسعار الفائدة. الين تحت ضغط من سياسة بنك اليابان. الزوج المتقاطع حساس جدًا لمعنويات المخاطرة.',
       isPremium: true,
-      isPublished: true,
-      isApproved: false,
+      status: 'PUBLISHED',
       rsi: 52,
       macdValue: 0.05,
       macdSignal: 0.02,
@@ -566,6 +576,7 @@ async function main() {
     {
       title: 'EUR/JPY Pullback Entry',
       titleAr: 'دخول ارتدادي لليورو مقابل الين',
+      slug: 'eur-jpy-pullback-entry',
       currencyPair: 'EUR/JPY',
       direction: 'BUY',
       entryPrice: 163.20,
@@ -582,8 +593,7 @@ async function main() {
       fundamentalAnalysis: 'EUR supported by rate differentials. JPY remains weak. Cross pair trend strongly bullish on weekly chart.',
       fundamentalAnalysisAr: 'اليورو مدعوم بفروق أسعار الفائدة. الين لا يزال ضعيفًا. اتجاه الزوج المتقاطع صاعد بقوة على الرسم البياني الأسبوعي.',
       isPremium: false,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 44,
       macdValue: -0.35,
       macdSignal: -0.20,
@@ -611,6 +621,7 @@ async function main() {
     {
       title: 'Gold (XAU/USD) Hedge Play',
       titleAr: 'صفقة تحوط في الذهب',
+      slug: 'gold-xau-usd-hedge-play',
       currencyPair: 'XAU/USD',
       direction: 'BUY',
       entryPrice: 2335.00,
@@ -627,8 +638,7 @@ async function main() {
       fundamentalAnalysis: 'Central banks increasing gold reserves. Rate cut cycle approaching. Geopolitical uncertainty elevated. USD weakening supports gold.',
       fundamentalAnalysisAr: 'البنوك المركزية تزيد احتياطيات الذهب. دورة خفض أسعار الفائدة تقترب. عدم اليقين الجيوسياسي مرتفع. ضعف الدولار يدعم الذهب.',
       isPremium: true,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 65,
       macdValue: 8.50,
       macdSignal: 5.20,
@@ -656,6 +666,7 @@ async function main() {
     {
       title: 'BTC/USD Momentum Scalp',
       titleAr: 'مضاربة لحظية على زخم البيتكوين',
+      slug: 'btc-usd-momentum-scalp',
       currencyPair: 'BTC/USD',
       direction: 'BUY',
       entryPrice: 67500,
@@ -672,8 +683,7 @@ async function main() {
       fundamentalAnalysis: 'ETF inflows positive. Institutional accumulation continuing. Regulatory clarity improving. On-chain metrics bullish.',
       fundamentalAnalysisAr: 'تدفقات صناديق المؤشرات المتداولة إيجابية. التراكم المؤسسي مستمر. الوضوح التنظيمي يتحسن. المقاييس على السلسلة صاعدة.',
       isPremium: true,
-      isPublished: true,
-      isApproved: true,
+      status: 'PUBLISHED',
       rsi: 58,
       macdValue: 350,
       macdSignal: 180,
@@ -706,6 +716,7 @@ async function main() {
         title: s.title,
         titleAr: s.titleAr,
         currencyPair: s.currencyPair,
+        slug: s.slug,
         direction: s.direction,
         entryPrice: s.entryPrice,
         stopLoss: s.stopLoss,
@@ -721,8 +732,7 @@ async function main() {
         fundamentalAnalysis: s.fundamentalAnalysis,
         fundamentalAnalysisAr: s.fundamentalAnalysisAr,
         isPremium: s.isPremium,
-        isPublished: s.isPublished,
-        isApproved: s.isApproved,
+        status: s.status,
         rsi: s.rsi,
         macdValue: s.macdValue,
         macdSignal: s.macdSignal,

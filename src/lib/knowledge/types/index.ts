@@ -163,8 +163,7 @@ export interface ValidatedStrategy {
   summary: string
   summaryAr: string
   isPremium: boolean
-  isPublished: boolean
-  isApproved: boolean
+  status: string
   trend: 'Bullish' | 'Bearish' | 'Neutral'
   support: number[]
   resistance: number[]

@@ -52,7 +52,7 @@ export async function runValidationWorker(): Promise<ValidationWorkerResult> {
 
         if (validatedStrategy) {
           approvedCount++
-          if (validatedStrategy.isPublished) {
+          if (validatedStrategy.status === 'PUBLISHED') {
             publishedCount++
           }
           console.log(`[ValidationWorker] Strategy approved: "${validatedStrategy.title}" (score: ${validatedStrategy.validationScore})`)
