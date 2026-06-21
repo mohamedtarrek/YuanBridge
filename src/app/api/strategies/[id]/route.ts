@@ -1,174 +1,158 @@
-import { NextResponse } from "next/server";
-import type { Strategy } from "@/lib/types";
-
-const mockStrategies: Strategy[] = [
-  {
-    id: "strat_001",
-    title: "EUR/USD Breakout Strategy",
-    titleAr: "استراتيجية اختراق اليورو/دولار",
-    currencyPair: "EUR/USD",
-    direction: "BUY",
-    entryPrice: 1.0850,
-    stopLoss: 1.0780,
-    takeProfit1: 1.0920,
-    takeProfit2: 1.0980,
-    risk: "Low",
-    confidence: 87,
-    publishedAt: new Date().toISOString(),
-    summary: "A low-risk EUR/USD breakout setup with strong support levels.",
-    summaryAr: "إعداد اختراق منخفض المخاطر لليورو/دولار مع مستويات دعم قوية.",
-    isPremium: false,
-    technicalAnalysis: "Price is forming a bullish flag pattern on the 4H chart.",
-    technicalAnalysisAr: "السعر يشكل نموذج العلم الصاعد على الرسم البياني 4 ساعات.",
-    fundamentalAnalysis: "Strong USD weakness due to dovish Fed expectations.",
-    fundamentalAnalysisAr: "ضعف الدولار بسبب توقعات الاحتياطي الفيدرالي المتساهلة.",
-    trend: "Bullish",
-    support: [1.0800, 1.0750, 1.0700],
-    resistance: [1.0900, 1.0950, 1.1000],
-    indicators: {
-      rsi: 62,
-      macd: "Bullish crossover",
-      ema: "Price above EMA(50)",
-      sma: "Price above SMA(200)",
-      atr: 0.0025,
-      bollingerBands: { upper: 1.0950, middle: 1.0850, lower: 1.0750 },
-    },
-    notes: "Wait for confirmation candle close above 1.0860.",
-    notesAr: "انتظر إغلاق شمعة التأكيد فوق 1.0860.",
-    tradesAnalyzed: 1240,
-    aiModel: "GPT-4o",
-  },
-  {
-    id: "strat_002",
-    title: "GBP/JPY Momentum Trade",
-    titleAr: "صفقة زخم الجنيه/ين",
-    currencyPair: "GBP/JPY",
-    direction: "SELL",
-    entryPrice: 192.50,
-    stopLoss: 193.80,
-    takeProfit1: 191.20,
-    takeProfit2: 190.00,
-    risk: "High",
-    confidence: 76,
-    publishedAt: new Date().toISOString(),
-    summary: "High-probability sell setup on GBP/JPY overbought conditions.",
-    summaryAr: "إعداد بيع عالي الاحتمال على زخم زوج الجنيه/ين في ظروف تشبع شراء.",
-    isPremium: true,
-    technicalAnalysis: "RSI showing bearish divergence on the daily chart.",
-    technicalAnalysisAr: "مؤشر القوة النسبية يظهر انحراف bearish على الرسم البياني اليومي.",
-    fundamentalAnalysis: "BoJ intervention concerns driving JPY strength.",
-    fundamentalAnalysisAr: "مخاوف تدخل بنك اليابان تقود قوة الين.",
-    trend: "Bearish",
-    support: [191.00, 190.50, 189.80],
-    resistance: [193.00, 193.50, 194.00],
-    indicators: {
-      rsi: 72,
-      macd: "Bearish divergence",
-      ema: "Price testing EMA(20)",
-      sma: "Price below SMA(50)",
-      atr: 0.85,
-      bollingerBands: { upper: 194.50, middle: 192.50, lower: 190.50 },
-    },
-    notes: "Consider partial position at TP1. Risk management is key.",
-    notesAr: "فكر في مركز جزئي عند الهدف الأول. إدارة المخاطر أساسية.",
-    tradesAnalyzed: 890,
-    aiModel: "Claude 3.5 Sonnet",
-  },
-  {
-    id: "strat_003",
-    title: "XAU/USD Reversal Play",
-    titleAr: "لعبة انعكاس الذهب/دولار",
-    currencyPair: "XAU/USD",
-    direction: "BUY",
-    entryPrice: 2320.00,
-    stopLoss: 2290.00,
-    takeProfit1: 2350.00,
-    takeProfit2: 2380.00,
-    risk: "Medium",
-    confidence: 82,
-    publishedAt: new Date().toISOString(),
-    summary: "Gold reversal from key support with strong buying pressure.",
-    summaryAr: "انعكاس الذهب من دعم رئيسي مع ضغط شراء قوي.",
-    isPremium: false,
-    technicalAnalysis: "Double bottom pattern forming on the H1 chart.",
-    technicalAnalysisAr: "نموذج القاع المزدوج يتشكل على الرسم البياني ساعة.",
-    fundamentalAnalysis: "Geopolitical tensions boosting safe-haven demand.",
-    fundamentalAnalysisAr: "التوترات الجيوسياسية تعزز الطلب على الملاذ الآمن.",
-    trend: "Bullish",
-    support: [2300, 2280, 2250],
-    resistance: [2340, 2360, 2400],
-    indicators: {
-      rsi: 45,
-      macd: "Bullish convergence",
-      ema: "Price near EMA(50)",
-      sma: "Price above SMA(200)",
-      atr: 18.5,
-      bollingerBands: { upper: 2380, middle: 2320, lower: 2260 },
-    },
-    notes: "Watch for volume confirmation before entry.",
-    notesAr: "راقب تأكيد الحجم قبل الدخول.",
-    tradesAnalyzed: 2050,
-    aiModel: "Gemini Ultra",
-  },
-  {
-    id: "strat_004",
-    title: "BTC/USD Range Scalp",
-    titleAr: "سكالبينج نطاق البيتكوين/دولار",
-    currencyPair: "BTC/USD",
-    direction: "SELL",
-    entryPrice: 67500,
-    stopLoss: 68500,
-    takeProfit1: 66500,
-    takeProfit2: 65500,
-    risk: "Medium",
-    confidence: 71,
-    publishedAt: new Date().toISOString(),
-    summary: "Scalping opportunity at range resistance with low risk.",
-    summaryAr: "فرصة سكالبينج عند مقاومة النطاق مع مخاطر منخفضة.",
-    isPremium: true,
-    technicalAnalysis: "Price rejected at range high multiple times.",
-    technicalAnalysisAr: "السعر رفض عند قمة النطاق عدة مرات.",
-    fundamentalAnalysis: "ETF outflows creating short-term selling pressure.",
-    fundamentalAnalysisAr: "تدفقات صناديق الاستثمار المتداولة تخلق ضغط بيع قصير المدى.",
-    trend: "Neutral",
-    support: [66000, 65000, 64000],
-    resistance: [68000, 69000, 70000],
-    indicators: {
-      rsi: 55,
-      macd: "Flat",
-      ema: "Price between EMA(20) and EMA(50)",
-      sma: "Price below SMA(200)",
-      atr: 850,
-      bollingerBands: { upper: 69000, middle: 67500, lower: 66000 },
-    },
-    notes: "Tight stop loss. Quick scalp expected.",
-    notesAr: "وقف خسارة ضيق. سكالبينج سريع متوقع.",
-    tradesAnalyzed: 1670,
-    aiModel: "DeepSeek R1",
-  },
-];
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { rateLimit } from '@/lib/security'
 
 export async function GET(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const strategy = mockStrategies.find((s) => s.id === id);
+    const rateCheck = await rateLimit(30, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
 
+    const session = await auth()
+    const { id } = await params
+
+    const strategy = await prisma.strategy.findUnique({ where: { id } })
     if (!strategy) {
       return NextResponse.json(
-        { success: false, message: "Strategy not found." },
+        { success: false, message: 'Strategy not found.' },
         { status: 404 }
-      );
+      )
     }
 
-    return NextResponse.json({ success: true, strategy });
+    if (strategy.isPremium && (!session?.user?.id || session.user.role !== 'PREMIUM')) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Premium subscription required.' },
+        { status: 403 }
+      )
+    }
+
+    return NextResponse.json({ success: true, strategy })
   } catch (error) {
-    console.error("Strategy detail error:", error);
+    console.error('Strategy detail error:', error)
     return NextResponse.json(
-      { success: false, message: "Internal server error." },
+      { success: false, message: 'Internal server error.' },
       { status: 500 }
-    );
+    )
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const rateCheck = await rateLimit(10, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
+
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized.' },
+        { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 }
+      )
+    }
+
+    const { id } = await params
+    const body = await request.json()
+
+    const existing = await prisma.strategy.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, message: 'Strategy not found.' },
+        { status: 404 }
+      )
+    }
+
+    const updateData: Record<string, unknown> = {}
+    const allowedFields = [
+      'title', 'titleAr', 'currencyPair', 'direction', 'entryPrice',
+      'stopLoss', 'takeProfit1', 'takeProfit2', 'risk', 'confidence',
+      'summary', 'summaryAr', 'isPremium', 'isPublished', 'isApproved',
+      'trend', 'technicalAnalysis', 'technicalAnalysisAr',
+      'fundamentalAnalysis', 'fundamentalAnalysisAr',
+      'support1', 'support2', 'support3',
+      'resistance1', 'resistance2', 'resistance3',
+      'rsi', 'macdValue', 'macdSignal', 'macdHistogram',
+      'emaFast', 'emaSlow', 'smaPeriod', 'smaValue', 'atr',
+      'bbUpper', 'bbMiddle', 'bbLower',
+      'notes', 'notesAr', 'tradesAnalyzed', 'aiModel', 'aiProvider',
+    ]
+
+    for (const field of allowedFields) {
+      if (field in body) {
+        updateData[field] = body[field]
+      }
+    }
+
+    if (body.isApproved === true && !existing.publishedAt) {
+      updateData.publishedAt = new Date()
+    }
+
+    const strategy = await prisma.strategy.update({
+      where: { id },
+      data: updateData as any,
+    })
+
+    return NextResponse.json({ success: true, strategy })
+  } catch (error) {
+    console.error('Strategy update error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error.' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const rateCheck = await rateLimit(10, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
+
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized.' },
+        { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 }
+      )
+    }
+
+    const { id } = await params
+    const existing = await prisma.strategy.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, message: 'Strategy not found.' },
+        { status: 404 }
+      )
+    }
+
+    await prisma.strategy.delete({ where: { id } })
+
+    return NextResponse.json({ success: true, message: 'Strategy deleted.' })
+  } catch (error) {
+    console.error('Strategy delete error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error.' },
+      { status: 500 }
+    )
   }
 }

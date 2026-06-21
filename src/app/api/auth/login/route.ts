@@ -1,52 +1,52 @@
-import { NextResponse } from "next/server";
-
-interface LoginBody {
-  email: string;
-  password: string;
-}
+import { NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/db'
+import { rateLimit, validateInput, loginSchema, sanitizeUser } from '@/lib/security'
 
 export async function POST(request: Request) {
   try {
-    const body: LoginBody = await request.json();
+    const rateCheck = await rateLimit(10, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
 
-    if (!body.email || !body.password) {
+    const body = await request.json()
+    const validation = validateInput(loginSchema, body)
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, message: "Email and password are required." },
+        { success: false, errors: validation.errors },
         { status: 400 }
-      );
+      )
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid email format." },
-        { status: 400 }
-      );
-    }
+    const { email, password } = validation.data
 
-    if (body.password.length < 6) {
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user || !user.password) {
       return NextResponse.json(
-        { success: false, message: "Invalid credentials." },
+        { success: false, message: 'Invalid email or password.' },
         { status: 401 }
-      );
+      )
     }
+
+    const isValid = await bcrypt.compare(password, user.password)
+    if (!isValid) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid email or password.' },
+        { status: 401 }
+      )
+    }
+
+    const safeUser = sanitizeUser(user)
 
     return NextResponse.json({
       success: true,
-      message: "Login successful.",
-      token: "mock_jwt_" + crypto.randomUUID().slice(0, 16),
-      user: {
-        id: "usr_" + crypto.randomUUID().slice(0, 8),
-        email: body.email,
-        name: "Test User",
-        subscription: "free",
-        createdAt: new Date().toISOString(),
-      },
-    });
+      message: 'Login successful.',
+      user: safeUser,
+    })
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error)
     return NextResponse.json(
-      { success: false, message: "Internal server error." },
+      { success: false, message: 'Internal server error.' },
       { status: 500 }
-    );
+    )
   }
 }

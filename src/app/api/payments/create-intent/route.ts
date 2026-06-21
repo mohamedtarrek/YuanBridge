@@ -1,39 +1,88 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { rateLimit } from '@/lib/security'
+import { createPayPalOrder } from '@/lib/payment'
 
-interface CreateIntentBody {
-  amount: number;
-  currency: string;
+function getStripe() {
+  const Stripe = require('stripe')
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return null
+  return new Stripe(key, { apiVersion: '2026-05-27.dahlia' })
 }
 
 export async function POST(request: Request) {
   try {
-    const body: CreateIntentBody = await request.json();
+    const rateCheck = await rateLimit(5, 60_000)
+    if (rateCheck instanceof NextResponse) return rateCheck
 
-    if (!body.amount || body.amount <= 0) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, message: "Amount must be a positive number." },
-        { status: 400 }
-      );
+        { success: false, message: 'Unauthorized.' },
+        { status: 401 }
+      )
     }
 
-    if (!body.currency || body.currency.length !== 3) {
+    const body = await request.json()
+    const { amount, currency, provider } = body as {
+      amount: number
+      currency: string
+      provider: 'stripe' | 'paypal'
+    }
+
+    if (!amount || amount <= 0) {
       return NextResponse.json(
-        { success: false, message: "Currency must be a 3-letter code (e.g. USD)." },
+        { success: false, message: 'Amount must be a positive number.' },
         { status: 400 }
-      );
+      )
+    }
+
+    if (!currency || currency.length !== 3) {
+      return NextResponse.json(
+        { success: false, message: 'Currency must be a 3-letter code (e.g. USD).' },
+        { status: 400 }
+      )
+    }
+
+    if (provider === 'stripe') {
+      const stripe = getStripe()
+      if (stripe) {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(amount * 100),
+          currency: currency.toLowerCase(),
+          metadata: { userId: session.user.id },
+        })
+
+        return NextResponse.json({
+          success: true,
+          clientSecret: paymentIntent.client_secret,
+          amount,
+          currency: currency.toUpperCase(),
+        })
+      }
+    }
+
+    if (provider === 'paypal') {
+      const paypalOrder = await createPayPalOrder(session.user.id)
+      return NextResponse.json({
+        success: true,
+        orderId: paypalOrder.orderId,
+        amount,
+        currency: currency.toUpperCase(),
+      })
     }
 
     return NextResponse.json({
       success: true,
-      clientSecret: "pi_" + crypto.randomUUID().slice(0, 16) + "_secret_" + crypto.randomUUID().slice(0, 16),
-      amount: body.amount,
-      currency: body.currency.toUpperCase(),
-    });
+      clientSecret: `pi_mock_secret_${crypto.randomUUID().slice(0, 16)}`,
+      amount,
+      currency: currency.toUpperCase(),
+    })
   } catch (error) {
-    console.error("Payment intent error:", error);
+    console.error('Payment intent error:', error)
     return NextResponse.json(
-      { success: false, message: "Internal server error." },
+      { success: false, message: 'Internal server error.' },
       { status: 500 }
-    );
+    )
   }
 }

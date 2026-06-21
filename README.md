@@ -1,62 +1,81 @@
-# YuanBridge
+# YuanBridge AI - Forex Trading Strategies Platform
 
-**Your Bridge to Chinese Shopping**
+## Overview
 
-YuanBridge is a professional purchasing service that helps customers buy products from Chinese marketplaces when they cannot purchase directly using Chinese Yuan (CNY) or do not have access to Chinese payment methods.
+YuanBridge AI is a comprehensive Forex trading strategies platform powered by multiple AI providers (GPT-4, Claude, Gemini, DeepSeek). It generates real-time trading strategies, provides market analysis, and supports Arabic/English bilingual interface with dark/light themes.
 
 ## Features
 
-- **Premium Landing Page** — Hero, How It Works, Why Choose Us, Marketplace Support, Reviews, FAQ, Contact sections
-- **Multi-step Order Form** — Dashboard-style form with validation, loading states, and review step
-- **Telegram Integration** — All orders submitted via the form are sent to a Telegram chat with professional formatting
-- **Anti-spam Protection** — IP-based rate limiting
-- **Responsive Design** — Fully mobile responsive
-- **SEO Optimized** — Proper metadata and Open Graph tags
-- **Arabic Support** — Full RTL Arabic translation with language toggle
-- **Modern Tech Stack** — Next.js 16, TypeScript, Tailwind CSS v4, Framer Motion
+- AI-powered Forex strategy generation
+- Real-time market analysis
+- Premium subscription ($15/month)
+- Multi-language (Arabic/English)
+- Dark/Light theme
+- Stripe & PayPal payments
+- Real-time notifications
+- Telegram integration
+- Technical & fundamental analysis
+- Multi-provider AI engine
 
 ## Tech Stack
 
-| Technology | Purpose |
-|-----------|---------|
-| Next.js 16 | React framework with App Router |
-| TypeScript | Type safety |
-| Tailwind CSS v4 | Utility-first styling |
-| Framer Motion | Animations |
-| Vercel | Deployment platform |
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL
+- NextAuth.js
+- Stripe & PayPal
+- Framer Motion
+- Vitest (Testing)
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 20+
+- PostgreSQL
 - npm
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd YuanBridge
-
-# Install dependencies
+git clone https://github.com/yourusername/yuanbridge.git
+cd yuanbridge
 npm install
-
-# Copy environment variables
-cp .env.example .env.local
-
-# Edit .env.local with your Telegram bot credentials:
-# TELEGRAM_BOT_TOKEN=your_bot_token
-# TELEGRAM_CHAT_ID=your_chat_id
+npx prisma db push
+npx tsx src/lib/db/seed.ts
 ```
 
-### Development
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | NextAuth encryption secret |
+| `NEXTAUTH_URL` | Application URL |
+| `STRIPE_SECRET_KEY` | Stripe API secret |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `PAYPAL_CLIENT_ID` | PayPal client ID |
+| `PAYPAL_CLIENT_SECRET` | PayPal client secret |
+| `RESEND_API_KEY` | Resend API key for emails |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token |
+| `ALPHA_VANTAGE_API_KEY` | Market data API key |
+| `OPENAI_API_KEY` | AI provider API key |
+| `ANTHROPIC_API_KEY` | Claude API key |
+| `GOOGLE_AI_API_KEY` | Gemini API key |
+| `DEEPSEEK_API_KEY` | DeepSeek API key |
+| `CRON_SECRET` | Secret for cron job endpoints |
+| `NEXT_PUBLIC_APP_URL` | Public app URL |
+
+### Running
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Production Build
 
@@ -65,106 +84,62 @@ npm run build
 npm start
 ```
 
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot API token from @BotFather | Yes |
-| `TELEGRAM_CHAT_ID` | Telegram chat ID to receive order notifications | Yes |
-
-## Deployment to Vercel
-
-### One-Click Deploy
-
-1. Push your code to a GitHub repository
-2. Go to [Vercel](https://vercel.com/new)
-3. Import your GitHub repository
-4. Add the following environment variables:
-   - `TELEGRAM_BOT_TOKEN` — Your Telegram bot token
-   - `TELEGRAM_CHAT_ID` — Your Telegram chat ID
-5. Click **Deploy**
-
-Vercel automatically detects Next.js and applies optimal settings.
-
-### Manual Deploy via Vercel CLI
+### Docker
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
+docker-compose up
 ```
 
-### Custom Domain
+### Database Seeding
 
-1. Go to your project on [Vercel Dashboard](https://vercel.com)
-2. Navigate to **Settings > Domains**
-3. Add your custom domain and follow DNS configuration instructions
+```bash
+npx tsx src/lib/db/seed.ts
+```
 
-## GitHub Integration
+Seed credentials:
+- Admin: admin@yuanbridge.com / Admin123!
+- Users: ahmed@example.com, sarah@example.com, omar@example.com, emma@example.com (password: User1234!)
 
-### Automatic Deployments
+## API Documentation
 
-Once your repository is connected to Vercel, every push to the `main` branch triggers an automatic production deployment. Pull request previews are generated automatically.
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
 
-### GitHub Actions CI
+### Strategies
+- `GET /api/strategies` - List published strategies
+- `GET /api/strategies/[id]` - Get strategy details
 
-The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
+### Payments
+- `POST /api/payments/create` - Create payment intent
+- `POST /api/payments/webhook` - Stripe/PayPal webhook
 
-- Runs on every push and pull request to `main`
-- Installs dependencies
-- Runs the production build
-- Reports any build failures
-
-## Performance Optimizations
-
-- **Edge Runtime** — API route runs on Vercel Edge for fast cold starts (sub-50ms)
-- **Image Optimization** — Next.js Image component configured for AVIF/WebP
-- **Font Optimization** — Inter font loaded via `next/font` with `swap` display
-- **Efficient Animations** — Canvas-based star background, CSS gradient overlays
-- **Metadata** — Full Open Graph and Twitter Card support
+### User
+- `GET /api/user/profile` - Get user profile
+- `PUT /api/user/profile` - Update user profile
 
 ## Project Structure
 
 ```
 src/
-├── app/
-│   ├── api/submit-order/route.ts   # Telegram order submission API (Edge)
-│   ├── order/page.tsx              # Order form page
-│   ├── success/page.tsx            # Success page
-│   ├── globals.css                 # Global styles
-│   ├── layout.tsx                  # Root layout
-│   └── page.tsx                    # Landing page
-├── components/
-│   ├── Navbar.tsx                  # Navigation bar
-│   ├── Footer.tsx                  # Footer
-│   ├── Hero.tsx                    # Hero section
-│   ├── HowItWorks.tsx              # Steps section
-│   ├── WhyChooseUs.tsx             # Features section
-│   ├── MarketplaceSupport.tsx      # Supported platforms
-│   ├── Reviews.tsx                 # Customer testimonials
-│   ├── FAQ.tsx                     # Accordion FAQ
-│   ├── Contact.tsx                 # Contact methods
-│   └── OrderForm.tsx               # Multi-step order form
-├── lib/
-│   ├── i18n/                       # Internationalization
-│   ├── rate-limit.ts               # Rate limiting utility
-│   └── utils.ts                    # Helper functions
-└── types/
-    └── index.ts                    # TypeScript interfaces
+├── app/                  # Next.js App Router
+│   ├── (auth)/          # Auth pages
+│   ├── (dashboard)/     # Dashboard pages
+│   ├── (marketing)/     # Marketing pages
+│   └── api/             # API routes
+├── components/           # React components
+├── lib/                  # Business logic
+│   ├── ai/              # AI Strategy Engine
+│   ├── auth/            # Authentication
+│   ├── db/              # Database client
+│   ├── market-data/     # Market data providers
+│   ├── notifications/   # Notifications
+│   ├── payment/         # Payment processing
+│   ├── security/        # Security utilities
+│   └── types/           # TypeScript types
+└── generated/           # Prisma client
 ```
-
-## Telegram Bot Setup
-
-1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` and follow the prompts
-3. Copy the API token and set it as `TELEGRAM_BOT_TOKEN`
-4. Search for [@userinfobot](https://t.me/userinfobot)
-5. Send `/start` to get your chat ID
-6. Set the chat ID as `TELEGRAM_CHAT_ID`
-7. Start a chat with your new bot by sending `/start`
 
 ## License
 
-Private — All rights reserved.
+Private / All rights reserved
