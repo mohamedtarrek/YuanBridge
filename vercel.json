@@ -3,5 +3,23 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/cron?job=strategies",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron?job=expire",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron?job=cleanup",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/knowledge/trigger?worker=all",
+      "schedule": "*/10 * * * *"
+    }
+  ]
 }

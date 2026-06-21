@@ -1,58 +1,6 @@
-import cron, { type ScheduledTask } from 'node-cron'
 import { prisma } from '@/lib/db/prisma'
-import { sendNotification, sendBulkNotifications } from '@/lib/notifications'
-
-const scheduledTasks: ScheduledTask[] = []
-
-export function startScheduler(): void {
-  if (scheduledTasks.length > 0) {
-    console.log('[Scheduler] Already running')
-    return
-  }
-
-  console.log('[Scheduler] Starting...')
-
-  const everyHour = cron.schedule('0 * * * *', async () => {
-    console.log('[Scheduler] Running hourly job: generate strategies')
-    try {
-      await generateStrategiesJob()
-    } catch (error) {
-      console.error('[Scheduler] Hourly job failed:', error)
-    }
-  })
-  scheduledTasks.push(everyHour)
-
-  const everyDay = cron.schedule('0 6 * * *', async () => {
-    console.log('[Scheduler] Running daily jobs: cleanup & expire')
-    try {
-      await Promise.all([
-        expireSubscriptionsJob(),
-        cleanupJob(),
-      ])
-    } catch (error) {
-      console.error('[Scheduler] Daily jobs failed:', error)
-    }
-  })
-  scheduledTasks.push(everyDay)
-
-  const everyMinute = cron.schedule('* * * * *', async () => {
-    try {
-      await checkPriceAlertsJob()
-    } catch (error) {
-      console.error('[Scheduler] Minute job failed:', error)
-    }
-  })
-  scheduledTasks.push(everyMinute)
-
-  scheduledTasks.forEach((task) => task.start())
-  console.log('[Scheduler] Started all jobs')
-}
-
-export function stopScheduler(): void {
-  scheduledTasks.forEach((task) => task.stop())
-  scheduledTasks.length = 0
-  console.log('[Scheduler] Stopped all jobs')
-}
+import { sendBulkNotifications } from '@/lib/notifications'
+import { analyzeMarket, generateStrategy } from '@/lib/ai/engine'
 
 const MAJOR_PAIRS = [
   'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF',
@@ -66,72 +14,91 @@ export async function generateStrategiesJob(): Promise<void> {
 
   for (const pair of MAJOR_PAIRS) {
     try {
-      const marketData = await fetchMarketData(pair)
-      if (!marketData) {
-        console.warn(`[Scheduler] No market data for ${pair}, skipping`)
+      const marketAnalysis = await analyzeMarket(pair)
+
+      const result = await generateStrategy({
+        pair,
+        prices: marketAnalysis.prices,
+        highs: marketAnalysis.highs,
+        lows: marketAnalysis.lows,
+        closes: marketAnalysis.closes,
+        volumes: marketAnalysis.volumes,
+        marketData: marketAnalysis.marketData,
+      })
+
+      if (!result.success || !result.strategy) {
+        console.warn(`[Scheduler] AI engine failed for ${pair}, using fallback`)
+        await generateFallbackStrategy(pair)
+        generatedPairs.push(pair)
         continue
       }
 
-      const direction = marketData.change24h > 0 ? 'BUY' : 'SELL'
-      const entryPrice = marketData.price
-      const stopLoss = direction === 'BUY'
-        ? entryPrice * (1 - 0.02 - Math.random() * 0.01)
-        : entryPrice * (1 + 0.02 + Math.random() * 0.01)
-      const takeProfit1 = direction === 'BUY'
-        ? entryPrice * (1 + 0.03 + Math.random() * 0.02)
-        : entryPrice * (1 - 0.03 - Math.random() * 0.02)
-      const takeProfit2 = direction === 'BUY'
-        ? entryPrice * (1 + 0.05 + Math.random() * 0.03)
-        : entryPrice * (1 - 0.05 - Math.random() * 0.03)
+      const s = result.strategy
 
-      const trend = marketData.change24h > 0.5 ? 'BULLISH' : marketData.change24h < -0.5 ? 'BEARISH' : 'NEUTRAL'
-
-      const strategy = await prisma.strategy.create({
+      await prisma.strategy.create({
         data: {
-          title: `${pair} ${direction} Strategy - ${new Date().toLocaleDateString()}`,
-          titleAr: `استراتيجية ${pair} ${direction === 'BUY' ? 'شراء' : 'بيع'} - ${new Date().toLocaleDateString('ar')}`,
-          currencyPair: pair,
-          direction,
-          entryPrice,
-          stopLoss,
-          takeProfit1,
-          takeProfit2,
-          risk: Math.abs(marketData.change24h) > 1 ? 'HIGH' : Math.abs(marketData.change24h) > 0.3 ? 'MEDIUM' : 'LOW',
-          confidence: Math.min(95, Math.max(60, 70 + Math.random() * 20)),
-          summary: `AI analysis suggests a ${direction.toLowerCase()} opportunity on ${pair} at $${entryPrice.toFixed(5)}. Stop loss at $${stopLoss.toFixed(5)} with targets at $${takeProfit1.toFixed(5)} and $${takeProfit2.toFixed(5)}.`,
-          summaryAr: `يشير تحليل الذكاء الاصطناعي إلى فرصة ${direction === 'BUY' ? 'شراء' : 'بيع'} على ${pair} عند $${entryPrice.toFixed(5)}. وقف الخسارة عند $${stopLoss.toFixed(5)} مع أهداف عند $${takeProfit1.toFixed(5)} و $${takeProfit2.toFixed(5)}.`,
+          title: s.title,
+          titleAr: s.titleAr,
+          currencyPair: s.currencyPair,
+          direction: s.direction,
+          entryPrice: s.entryPrice,
+          stopLoss: s.stopLoss,
+          takeProfit1: s.takeProfit1,
+          takeProfit2: s.takeProfit2,
+          risk: s.risk.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH',
+          confidence: s.confidence,
+          summary: s.summary,
+          summaryAr: s.summaryAr,
           isPremium: Math.random() > 0.5,
           isPublished: true,
           isApproved: true,
-          trend,
-          aiModel: 'YuanBridge AI v2.4',
-          tradesAnalyzed: Math.floor(Math.random() * 10000) + 1000,
-          support1: entryPrice * 0.98,
-          support2: entryPrice * 0.96,
-          support3: entryPrice * 0.94,
-          resistance1: entryPrice * 1.02,
-          resistance2: entryPrice * 1.04,
-          resistance3: entryPrice * 1.06,
+          trend: s.trend.toUpperCase() as 'BULLISH' | 'BEARISH' | 'NEUTRAL',
+          aiModel: s.aiModel,
+          tradesAnalyzed: s.tradesAnalyzed,
+          support1: s.support1 ?? null,
+          support2: s.support2 ?? null,
+          support3: s.support3 ?? null,
+          resistance1: s.resistance1 ?? null,
+          resistance2: s.resistance2 ?? null,
+          resistance3: s.resistance3 ?? null,
+          rsi: s.rsi ?? null,
+          emaFast: s.emaFast ?? null,
+          emaSlow: s.emaSlow ?? null,
+          smaPeriod: s.smaPeriod ?? null,
+          smaValue: s.smaValue ?? null,
+          atr: s.atr ?? null,
+          bbUpper: s.bbUpper ?? null,
+          bbMiddle: s.bbMiddle ?? null,
+          bbLower: s.bbLower ?? null,
+          notes: s.notes ?? null,
+          notesAr: s.notesAr ?? null,
           publishedAt: new Date(),
         },
       })
 
       generatedPairs.push(pair)
+      console.log(`[Scheduler] Generated AI strategy for ${pair} (confidence: ${s.confidence}%)`)
 
       await prisma.marketData.create({
         data: {
           pair,
-          price: marketData.price,
-          volume: marketData.volume,
-          high24h: marketData.high24h,
-          low24h: marketData.low24h,
-          change24h: marketData.change24h,
-          source: 'internal',
+          price: marketAnalysis.marketData.price,
+          volume: marketAnalysis.marketData.volume,
+          high24h: marketAnalysis.marketData.high24h,
+          low24h: marketAnalysis.marketData.low24h,
+          change24h: marketAnalysis.marketData.change24h,
+          source: 'ai-engine',
           timestamp: new Date(),
         },
       })
     } catch (error) {
       console.error(`[Scheduler] Failed to generate strategy for ${pair}:`, error)
+      try {
+        await generateFallbackStrategy(pair)
+        generatedPairs.push(pair)
+      } catch (fallbackError) {
+        console.error(`[Scheduler] Fallback also failed for ${pair}:`, fallbackError)
+      }
     }
   }
 
@@ -142,31 +109,44 @@ export async function generateStrategiesJob(): Promise<void> {
   console.log(`[Scheduler] Generated ${generatedPairs.length} strategies`)
 }
 
-async function fetchMarketData(pair: string) {
-  try {
-    const response = await fetch(
-      `https://api.exchangerate-api.com/v4/latest/USD`
-    )
-    if (!response.ok) return null
-    const data = await response.json()
-    const rate = data.rates[pair.split('/')[0]] || 1
-    const volatility = 0.005 + Math.random() * 0.025
-    return {
-      price: rate,
-      volume: Math.floor(Math.random() * 1000000) + 100000,
-      high24h: rate * (1 + volatility),
-      low24h: rate * (1 - volatility),
-      change24h: (Math.random() - 0.5) * 2,
-    }
-  } catch {
-    return {
-      price: 1 + Math.random(),
-      volume: Math.floor(Math.random() * 1000000) + 100000,
-      high24h: 1.02 + Math.random() * 0.03,
-      low24h: 0.98 - Math.random() * 0.03,
-      change24h: (Math.random() - 0.5) * 2,
-    }
-  }
+async function generateFallbackStrategy(pair: string): Promise<void> {
+  const entryPrice = 1 + Math.random()
+  const direction = Math.random() > 0.5 ? 'BUY' : 'SELL'
+  const stopLoss = direction === 'BUY'
+    ? entryPrice * (1 - 0.02 - Math.random() * 0.01)
+    : entryPrice * (1 + 0.02 + Math.random() * 0.01)
+  const takeProfit1 = direction === 'BUY'
+    ? entryPrice * (1 + 0.03 + Math.random() * 0.02)
+    : entryPrice * (1 - 0.03 - Math.random() * 0.02)
+  const takeProfit2 = direction === 'BUY'
+    ? entryPrice * (1 + 0.05 + Math.random() * 0.03)
+    : entryPrice * (1 - 0.05 - Math.random() * 0.03)
+
+  await prisma.strategy.create({
+    data: {
+      title: `${pair} ${direction} Signal - Fallback`,
+      titleAr: `إشارة ${direction === 'BUY' ? 'شراء' : 'بيع'} ${pair}`,
+      currencyPair: pair,
+      direction,
+      entryPrice,
+      stopLoss,
+      takeProfit1,
+      takeProfit2,
+      risk: 'MEDIUM',
+      confidence: Math.floor(Math.random() * 30) + 60,
+      summary: `${direction === 'BUY' ? 'Buy' : 'Sell'} signal for ${pair} at ${entryPrice.toFixed(5)}. Generated via fallback.`,
+      summaryAr: `إشارة ${direction === 'BUY' ? 'شراء' : 'بيع'} لـ ${pair} عند ${entryPrice.toFixed(5)}. تم التوليد عبر النسخ الاحتياطي.`,
+      isPremium: false,
+      isPublished: true,
+      isApproved: true,
+      trend: 'NEUTRAL',
+      aiModel: 'YuanBridge Fallback',
+      tradesAnalyzed: 0,
+      publishedAt: new Date(),
+    },
+  })
+
+  console.log(`[Scheduler] Generated fallback strategy for ${pair}`)
 }
 
 async function notifyPremiumUsersOfNewStrategies(pairs: string[]): Promise<void> {

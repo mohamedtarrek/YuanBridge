@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { runDiscoveryWorker } from '@/lib/knowledge/workers/discovery-worker'
+import { runDiscoveryWorker, updateWorkerStatus } from '@/lib/knowledge/workers'
 import { runExtractionWorker } from '@/lib/knowledge/workers/extraction-worker'
 import { runValidationWorker } from '@/lib/knowledge/workers/validation-worker'
 import { runPublishWorker } from '@/lib/knowledge/workers/publish-worker'
@@ -67,11 +67,14 @@ export async function POST(request: NextRequest) {
 
     for (const [name, fn] of Object.entries(workerMap)) {
       try {
-        results[name] = await fn()
+        const result = await fn()
+        results[name] = result
+        updateWorkerStatus(name, JSON.stringify(result))
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
         errors.push(`${name}: ${msg}`)
         results[name] = { error: msg }
+        updateWorkerStatus(name, `Error: ${msg}`)
       }
     }
 
@@ -97,6 +100,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await workerFn()
+    updateWorkerStatus(worker, JSON.stringify(result))
     return NextResponse.json({
       success: true,
       worker,
@@ -106,6 +110,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     console.error(`[KnowledgeTrigger] Worker ${worker} failed:`, error)
+    updateWorkerStatus(worker, `Error: ${message}`)
     return NextResponse.json(
       { success: false, worker, error: message, timestamp: new Date().toISOString() },
       { status: 500 },
