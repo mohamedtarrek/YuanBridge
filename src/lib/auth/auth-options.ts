@@ -30,18 +30,15 @@ declare module 'next-auth/jwt' {
   }
 }
 
-console.log('[AUTH::INIT] Environment check:', {
+console.log('[AUTH::INIT] Environment:', {
   NODE_ENV: process.env.NODE_ENV,
   hasAuthSecret: !!process.env.AUTH_SECRET,
-  authSecretLength: process.env.AUTH_SECRET?.length,
-  hasDatabaseUrl: !!process.env.DATABASE_URL,
-  databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 30),
-  hasDirectUrl: !!process.env.DIRECT_URL,
-  hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
-  hasAuthUrl: !!process.env.AUTH_URL,
-  hasAuthTrustHost: !!process.env.AUTH_TRUST_HOST,
-  googleIdConfigured: !!process.env.AUTH_GOOGLE_ID,
-  githubIdConfigured: !!process.env.AUTH_GITHUB_ID,
+  hasAuthUrl: !!process.env.AUTH_URL || !!process.env.NEXTAUTH_URL,
+  providers: [
+    'credentials',
+    process.env.AUTH_GOOGLE_ID && 'google',
+    process.env.AUTH_GITHUB_ID && 'github',
+  ].filter(Boolean).join(', '),
 })
 
 export const authOptions: NextAuthConfig = {
@@ -129,14 +126,14 @@ export const authOptions: NextAuthConfig = {
         }
       },
     }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID ?? '',
+    ...(process.env.AUTH_GOOGLE_ID ? [Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
-    }),
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID ?? '',
+    })] : []),
+    ...(process.env.AUTH_GITHUB_ID ? [GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET ?? '',
-    }),
+    })] : []),
   ],
   session: {
     strategy: 'jwt',
