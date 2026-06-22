@@ -11,7 +11,6 @@ export async function POST(request: Request) {
       envCheck: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 30),
-        hasDirectUrl: !!process.env.DIRECT_URL,
         hasAuthSecret: !!process.env.AUTH_SECRET,
         hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
         hasAuthUrl: !!process.env.AUTH_URL,
