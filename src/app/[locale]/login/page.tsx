@@ -28,9 +28,16 @@ export default function LoginPage() {
       })
 
       if (!result || !result.ok || result.error) {
-        const message = result?.error === 'CredentialsSignin'
-          ? 'Invalid email or password'
-          : result?.error || 'Authentication failed'
+        let message: string
+        if (result?.error === 'CredentialsSignin') {
+          message = 'Invalid email or password'
+        } else if (result?.error) {
+          message = result.error
+          console.error('[LOGIN] Server error:', result.error, 'status:', result.status)
+        } else {
+          message = 'Authentication failed'
+          console.error('[LOGIN] Unknown failure, full result:', JSON.stringify(result))
+        }
         setError(message)
         toast.error(message)
         return
@@ -40,6 +47,7 @@ export default function LoginPage() {
       window.location.href = `/${lang}/dashboard`
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network error. Please try again.'
+      console.error('[LOGIN] Caught exception:', err)
       setError(message)
       toast.error(message)
     } finally {
