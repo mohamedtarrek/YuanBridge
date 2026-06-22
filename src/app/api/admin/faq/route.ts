@@ -18,7 +18,7 @@ const faqUpdateSchema = faqSchema.partial()
 import type { SessionPayload } from '@/lib/auth'
 
 function checkAdmin(session: SessionPayload | null): boolean {
-  return !!(session?.sub && session.role === 'ADMIN')
+  return !!(session?.sub && (session.role === 'MODERATOR' || session.role === 'ADMIN' || session.role === 'SUPER_ADMIN'))
 }
 
 export async function GET() {

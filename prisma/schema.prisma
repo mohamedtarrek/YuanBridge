@@ -9,6 +9,8 @@ datasource db {
 
 enum UserRole {
   USER
+  PREMIUM_USER
+  MODERATOR
   ADMIN
   SUPER_ADMIN
 }
@@ -16,6 +18,10 @@ enum UserRole {
 enum SubscriptionPlan {
   FREE
   PREMIUM
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  LIFETIME
 }
 
 enum SubscriptionStatus {
@@ -23,6 +29,7 @@ enum SubscriptionStatus {
   EXPIRED
   CANCELLED
   TRIALING
+  SUSPENDED
 }
 
 enum PaymentStatus {
@@ -98,6 +105,10 @@ enum AdminAction {
   ACTIVATE_ADMIN
   CHANGE_USER_ROLE
   CHANGE_SUBSCRIPTION
+  EXTEND_SUBSCRIPTION
+  CANCEL_SUBSCRIPTION
+  ACTIVATE_SUBSCRIPTION
+  SUSPEND_SUBSCRIPTION
   RESET_PASSWORD
   CREATE_CATEGORY
   UPDATE_CATEGORY
@@ -200,6 +211,10 @@ model Subscription {
   startedAt     DateTime           @default(now())
   endsAt        DateTime?
   cancelledAt   DateTime?
+  trialEndsAt   DateTime?
+  autoRenew     Boolean            @default(false)
+  price         Float?
+  currency      String             @default("USD")
   stripeId      String?
   stripePriceId String?
   stripeSubId   String?

@@ -89,9 +89,10 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    if (plan !== 'FREE' && plan !== 'PREMIUM') {
+    const validPlans = ['FREE', 'PREMIUM', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME']
+    if (!validPlans.includes(plan)) {
       return NextResponse.json(
-        { success: false, message: 'Plan must be FREE or PREMIUM.' },
+        { success: false, message: `Plan must be one of: ${validPlans.join(', ')}` },
         { status: 400 }
       )
     }
@@ -112,8 +113,8 @@ export async function PATCH(request: NextRequest) {
         where: { userId },
         data: {
           plan,
-          status: 'ACTIVE',
-          endsAt: endsAt ? new Date(endsAt) : plan === 'FREE' ? null : existingSub.endsAt,
+          status: plan === 'FREE' ? 'EXPIRED' : 'ACTIVE',
+          endsAt: endsAt ? new Date(endsAt) : plan === 'FREE' ? null : plan === 'LIFETIME' ? null : existingSub.endsAt,
           cancelledAt: plan === 'FREE' ? new Date() : null,
         },
       })
@@ -122,8 +123,8 @@ export async function PATCH(request: NextRequest) {
         data: {
           userId,
           plan,
-          status: 'ACTIVE',
-          endsAt: endsAt ? new Date(endsAt) : null,
+          status: plan === 'FREE' ? 'ACTIVE' : 'ACTIVE',
+          endsAt: endsAt ? new Date(endsAt) : plan === 'LIFETIME' ? null : null,
         },
       })
     }

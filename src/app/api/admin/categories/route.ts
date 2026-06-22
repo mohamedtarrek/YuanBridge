@@ -6,7 +6,7 @@ import { rateLimit, validateInput, categorySchema } from '@/lib/security'
 export async function GET() {
   try {
     const session = await auth()
-    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'MODERATOR' && session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { success: false, message: 'Forbidden. Super Admin access required.' },
+        { success: false, message: 'Forbidden. Admin access required.' },
         { status: 403 }
       )
     }

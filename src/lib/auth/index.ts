@@ -1,8 +1,11 @@
 export {
   auth,
   requireAuth,
+  requirePremium,
+  requireModerator,
   requireAdmin,
   requireSuperAdmin,
+  canAccess,
   getSessionFromCookieString,
 } from './guards'
 

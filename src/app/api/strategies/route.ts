@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { rateLimit } from '@/lib/security'
+import { isPremiumActive } from '@/lib/subscription/expiry'
 import type { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
@@ -12,11 +13,7 @@ export async function GET(request: NextRequest) {
     const session = await auth()
     let isPremium = false
     if (session?.sub) {
-      const sub = await prisma.subscription.findUnique({
-        where: { userId: session.sub },
-        select: { plan: true, status: true },
-      })
-      isPremium = sub?.plan === 'PREMIUM' && sub?.status === 'ACTIVE'
+      isPremium = await isPremiumActive(session.sub) || session.role === 'PREMIUM_USER' || session.role === 'MODERATOR' || session.role === 'ADMIN' || session.role === 'SUPER_ADMIN'
     }
 
     const searchParams = request.nextUrl.searchParams

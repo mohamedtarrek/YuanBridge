@@ -35,7 +35,12 @@ export async function POST(request: Request) {
 
     const { email, password } = parsed.data
 
-    const user = await prisma.user.findUnique({ where: { email } })
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        subscription: { select: { plan: true, status: true, endsAt: true } },
+      },
+    })
 
     if (!user || !user.password) {
       return NextResponse.json(
@@ -52,7 +57,37 @@ export async function POST(request: Request) {
       )
     }
 
-    const token = await new SignJWT({ sub: user.id, role: user.role })
+    const roleVal: string = user.role
+    let effectiveRole = roleVal
+    const sub = user.subscription
+    if (roleVal === 'USER' && sub) {
+      const isPremium = sub.plan !== 'FREE' &&
+        (sub.plan === 'LIFETIME' ||
+          (sub.status === 'ACTIVE' &&
+            (!sub.endsAt || sub.endsAt > new Date())))
+
+      if (isPremium) {
+        effectiveRole = 'PREMIUM_USER'
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: 'PREMIUM_USER' },
+        })
+      }
+    } else if (roleVal === 'PREMIUM_USER' && sub) {
+      const isExpired = sub.plan !== 'LIFETIME' &&
+        (sub.status !== 'ACTIVE' ||
+          (sub.endsAt && sub.endsAt <= new Date()))
+
+      if (isExpired) {
+        effectiveRole = 'USER'
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: 'USER' },
+        })
+      }
+    }
+
+    const token = await new SignJWT({ sub: user.id, role: effectiveRole })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
@@ -72,6 +107,14 @@ export async function POST(request: Request) {
       path: '/',
       maxAge: SESSION_MAX_AGE_SECONDS,
     })
+
+    prisma.loginHistory.create({
+      data: {
+        userId: user.id,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+      },
+    }).catch(() => {})
 
     return response
   } catch (error) {

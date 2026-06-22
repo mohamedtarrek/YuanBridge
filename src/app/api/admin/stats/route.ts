@@ -9,7 +9,7 @@ export async function GET() {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'MODERATOR' && session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -23,8 +23,13 @@ export async function GET() {
     const [
       totalUsers,
       totalPremiumUsers,
+      monthlyUsers,
+      quarterlyUsers,
+      yearlyUsers,
+      lifetimeUsers,
       totalFreeUsers,
       totalAdmins,
+      totalModerators,
       totalStrategies,
       publishedStrategies,
       draftStrategies,
@@ -39,9 +44,14 @@ export async function GET() {
       totalPremiumStrategies,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.user.count({ where: { subscription: { plan: 'PREMIUM' } } }),
+      prisma.user.count({ where: { subscription: { plan: { in: ['PREMIUM', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME'] } } } }),
+      prisma.user.count({ where: { subscription: { plan: 'MONTHLY' } } }),
+      prisma.user.count({ where: { subscription: { plan: 'QUARTERLY' } } }),
+      prisma.user.count({ where: { subscription: { plan: 'YEARLY' } } }),
+      prisma.user.count({ where: { subscription: { plan: 'LIFETIME' } } }),
       prisma.user.count({ where: { subscription: { plan: 'FREE' } } }),
       prisma.user.count({ where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } } }),
+      prisma.user.count({ where: { role: 'MODERATOR' } }),
       prisma.strategy.count(),
       prisma.strategy.count({ where: { status: 'PUBLISHED' } }),
       prisma.strategy.count({ where: { status: 'DRAFT' } }),
@@ -71,8 +81,13 @@ export async function GET() {
       stats: {
         totalUsers,
         totalPremiumUsers,
+        monthlyUsers,
+        quarterlyUsers,
+        yearlyUsers,
+        lifetimeUsers,
         totalFreeUsers,
         totalAdmins,
+        totalModerators,
         totalStrategies,
         publishedStrategies,
         draftStrategies,

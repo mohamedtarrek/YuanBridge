@@ -8,12 +8,12 @@ interface User {
   id: string;
   name: string | null;
   email: string;
-  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+  role: 'USER' | 'PREMIUM_USER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
   isBanned: boolean;
   bannedAt: string | null;
   banReason: string | null;
   createdAt: string;
-  subscription?: { plan: string; status: string } | null;
+  subscription?: { plan: string; status: string; endsAt?: string } | null;
 }
 
 export default function AdminUsersPage() {
@@ -135,9 +135,23 @@ export default function AdminUsersPage() {
     const config: Record<string, string> = {
       SUPER_ADMIN: 'bg-accent-500/20 text-accent-500',
       ADMIN: 'bg-info/10 text-info',
+      MODERATOR: 'bg-purple-500/20 text-purple-400',
+      PREMIUM_USER: 'bg-yellow-500/20 text-yellow-400',
       USER: 'bg-white/5 text-text-dim',
     };
     return config[role] || 'bg-white/5 text-text-dim';
+  };
+
+  const planBadge = (plan: string) => {
+    const config: Record<string, string> = {
+      LIFETIME: 'bg-purple-500/20 text-purple-400',
+      YEARLY: 'bg-blue-500/20 text-blue-400',
+      QUARTERLY: 'bg-info/10 text-info',
+      MONTHLY: 'bg-accent-500/20 text-accent-500',
+      PREMIUM: 'bg-accent-500/20 text-accent-500',
+      FREE: 'bg-white/5 text-text-dim',
+    };
+    return config[plan] || 'bg-white/5 text-text-dim';
   };
 
   return (
@@ -157,6 +171,8 @@ export default function AdminUsersPage() {
             <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }} className="px-4 py-2 rounded-xl bg-white/5 border border-border text-text text-sm">
               <option value="">{lang === 'ar' ? 'جميع الأدوار' : 'All Roles'}</option>
               <option value="USER">USER</option>
+              <option value="PREMIUM_USER">PREMIUM_USER</option>
+              <option value="MODERATOR">MODERATOR</option>
               <option value="ADMIN">ADMIN</option>
               <option value="SUPER_ADMIN">SUPER_ADMIN</option>
             </select>
@@ -195,6 +211,8 @@ export default function AdminUsersPage() {
                   <td className="py-3 px-4">
                     <select value={u.role} onChange={e => handleRoleChange(u.id, e.target.value)} className={`px-2 py-0.5 rounded-lg text-xs font-semibold border-0 cursor-pointer ${roleBadge(u.role)}`}>
                       <option value="USER">USER</option>
+                      <option value="PREMIUM_USER">PREMIUM_USER</option>
+                      <option value="MODERATOR">MODERATOR</option>
                       <option value="ADMIN">ADMIN</option>
                       <option value="SUPER_ADMIN">SUPER_ADMIN</option>
                     </select>
@@ -210,12 +228,14 @@ export default function AdminUsersPage() {
                     <select
                       value={u.subscription?.plan || 'FREE'}
                       onChange={e => handleSubscriptionChange(u.id, e.target.value, u.subscription?.plan || 'FREE')}
-                      className={`px-2 py-0.5 rounded-lg text-xs font-semibold border-0 cursor-pointer ${
-                        u.subscription?.plan === 'PREMIUM' ? 'bg-accent-500/20 text-accent-500' : 'bg-white/5 text-text-dim'
-                      }`}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-semibold border-0 cursor-pointer ${planBadge(u.subscription?.plan || 'FREE')}`}
                     >
                       <option value="FREE">FREE</option>
                       <option value="PREMIUM">PREMIUM</option>
+                      <option value="MONTHLY">MONTHLY</option>
+                      <option value="QUARTERLY">QUARTERLY</option>
+                      <option value="YEARLY">YEARLY</option>
+                      <option value="LIFETIME">LIFETIME</option>
                     </select>
                     {u.subscription?.status && (
                       <span className={`ml-1 text-[10px] ${u.subscription.status === 'ACTIVE' ? 'text-success' : 'text-text-dim'}`}>

@@ -59,7 +59,7 @@ async function main() {
         nameAr: 'سارة جونسون',
         email: 'sarah@example.com',
         password: userPassword,
-        role: 'USER',
+        role: 'PREMIUM_USER',
         language: 'en',
         theme: 'light',
       },
@@ -85,9 +85,22 @@ async function main() {
         nameAr: 'إيما ويلسون',
         email: 'emma@example.com',
         password: userPassword,
-        role: 'USER',
+        role: 'PREMIUM_USER',
         language: 'en',
         theme: 'light',
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: 'moderator@yuanbridge.com' },
+      update: {},
+      create: {
+        name: 'Content Moderator',
+        nameAr: 'مشرف محتوى',
+        email: 'moderator@yuanbridge.com',
+        password: hashedPassword,
+        role: 'MODERATOR',
+        language: 'ar',
+        theme: 'dark',
       },
     }),
   ])
@@ -95,14 +108,14 @@ async function main() {
 
   // ── Subscriptions ───────────────────────────────────────────────────────
   const now = new Date()
-  const thirtyDays = 30 * 24 * 60 * 60 * 1000
-  const ninetyDays = 90 * 24 * 60 * 60 * 1000
+  const day = 24 * 60 * 60 * 1000
 
   const subscriptions = [
-    { userId: users[0].id, plan: 'PREMIUM' as const, status: 'ACTIVE' as const, start: new Date(now.getTime() - ninetyDays), end: new Date(now.getTime() + ninetyDays) },
-    { userId: users[1].id, plan: 'PREMIUM' as const, status: 'ACTIVE' as const, start: new Date(now.getTime() - thirtyDays), end: new Date(now.getTime() + thirtyDays) },
-    { userId: users[2].id, plan: 'FREE' as const, status: 'TRIALING' as const, start: now, end: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) },
-    { userId: users[3].id, plan: 'PREMIUM' as const, status: 'ACTIVE' as const, start: new Date(now.getTime() - sixtyDays(60)), end: new Date(now.getTime() + sixtyDays(30)) },
+    { userId: users[0].id, plan: 'MONTHLY' as const, status: 'ACTIVE' as const, start: new Date(now.getTime() - 15 * day), end: new Date(now.getTime() + 15 * day), price: 12.99 },
+    { userId: users[1].id, plan: 'YEARLY' as const, status: 'ACTIVE' as const, start: new Date(now.getTime() - 60 * day), end: new Date(now.getTime() + 305 * day), price: 79.99 },
+    { userId: users[2].id, plan: 'FREE' as const, status: 'TRIALING' as const, start: now, end: new Date(now.getTime() + 7 * day), price: 0 },
+    { userId: users[3].id, plan: 'LIFETIME' as const, status: 'ACTIVE' as const, start: now, end: null, price: 199.99 },
+    { userId: users[4].id, plan: 'FREE' as const, status: 'ACTIVE' as const, start: now, end: null, price: 0 },
   ]
 
   for (const sub of subscriptions) {
@@ -115,6 +128,8 @@ async function main() {
         status: sub.status,
         startedAt: sub.start,
         endsAt: sub.end,
+        price: sub.price,
+        currency: 'USD',
       },
     })
   }
@@ -833,8 +848,8 @@ async function main() {
     {
       question: 'How much does premium cost?',
       questionAr: 'كم تكلفة الاشتراك المميز؟',
-      answer: 'Premium subscription is $15 per month. This includes unlimited AI strategy generation, real-time market data, priority support, and access to advanced technical indicators.',
-      answerAr: 'الاشتراك المميز هو 15 دولارًا شهريًا. يشمل ذلك توليد استراتيجيات غير محدودة بالذكاء الاصطناعي وبيانات سوق فورية ودعم ذو أولوية والوصول إلى مؤشرات فنية متقدمة.',
+      answer: 'Premium subscriptions start at $12.99 per month. We offer Monthly ($12.99), Quarterly ($29.99), Yearly ($79.99), and Lifetime ($199.99) plans. All plans include unlimited AI strategy generation, real-time market data, priority support, and access to advanced technical indicators.',
+      answerAr: 'الاشتراكات المميزة تبدأ من 12.99 دولارًا شهريًا. نقدم خططًا شهرية (12.99 دولارًا) وربع سنوية (29.99 دولارًا) وسنوية (79.99 دولارًا) ومدى الحياة (199.99 دولارًا). جميع الخطط تشمل توليد استراتيجيات غير محدودة بالذكاء الاصطناعي وبيانات سوق فورية ودعم ذو أولوية والوصول إلى مؤشرات فنية متقدمة.',
       order: 2,
     },
     {
@@ -905,9 +920,11 @@ async function main() {
     { key: 'site_name', value: 'YuanBridge AI' },
     { key: 'site_description', value: 'AI-Powered Forex Trading Strategies Platform' },
     { key: 'site_description_ar', value: 'منصة استراتيجيات تداول الفوركس المدعومة بالذكاء الاصطناعي' },
-    { key: 'premium_price', value: '15' },
+    { key: 'monthly_price', value: '12.99' },
+    { key: 'quarterly_price', value: '29.99' },
+    { key: 'yearly_price', value: '79.99' },
+    { key: 'lifetime_price', value: '199.99' },
     { key: 'premium_currency', value: 'USD' },
-    { key: 'premium_interval', value: 'month' },
     { key: 'free_strategies_per_day', value: '3' },
     { key: 'maintenance_mode', value: 'false' },
     { key: 'default_language', value: 'ar' },
@@ -928,10 +945,6 @@ async function main() {
   console.log(`  ✓ ${settings.length} app settings created`)
 
   console.log('\n✓ Seeding complete!')
-}
-
-function sixtyDays(days: number): number {
-  return days * 24 * 60 * 60 * 1000
 }
 
 main()

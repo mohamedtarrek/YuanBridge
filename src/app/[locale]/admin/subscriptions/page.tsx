@@ -52,7 +52,12 @@ export default function AdminSubscriptionsPage() {
               <tr key={s.id} className="border-b border-border/50 hover:bg-white/5">
                 <td className="py-3 px-4 text-text">{s.user?.name || s.user?.email}</td>
                 <td className="py-3 px-4">
-                  <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${s.plan === 'PREMIUM' ? 'bg-accent-500/20 text-accent-500' : 'bg-white/5 text-text-dim'}`}>{s.plan}</span>
+                  <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${
+                    s.plan === 'LIFETIME' ? 'bg-purple-500/20 text-purple-400' :
+                    s.plan === 'YEARLY' ? 'bg-blue-500/20 text-blue-400' :
+                    s.plan === 'QUARTERLY' ? 'bg-info/10 text-info' :
+                    s.plan === 'MONTHLY' || s.plan === 'PREMIUM' ? 'bg-accent-500/20 text-accent-500' : 'bg-white/5 text-text-dim'
+                  }`}>{s.plan}</span>
                 </td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${

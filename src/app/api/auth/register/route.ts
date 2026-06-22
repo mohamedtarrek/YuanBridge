@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
 import { registerSchema } from '@/lib/auth'
 import { rateLimit, sanitizeUser } from '@/lib/security'
+import { notifyNewRegistration } from '@/lib/notifications/admin'
 
 export async function POST(request: Request) {
   try {
@@ -48,6 +49,21 @@ export async function POST(request: Request) {
         },
       },
     })
+
+    await Promise.all([
+      prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: 'Welcome to YuanBridge!',
+          titleAr: 'مرحباً بك في يوانبريدج!',
+          message: 'Your account has been created. Explore our strategies and start your trading journey.',
+          messageAr: 'تم إنشاء حسابك. استكشف استراتيجياتنا وابدأ رحلة التداول الخاصة بك.',
+          type: 'SYSTEM',
+          link: '/strategies',
+        },
+      }),
+      notifyNewRegistration(user.id, name || email),
+    ])
 
     return NextResponse.json(
       { success: true, message: 'Account created successfully.', user: sanitizeUser(user) },
