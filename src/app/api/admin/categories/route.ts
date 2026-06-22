@@ -6,7 +6,7 @@ import { rateLimit, validateInput, categorySchema } from '@/lib/security'
 export async function GET() {
   try {
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'CREATE_CATEGORY',
         targetId: category.id,
         targetType: 'category',

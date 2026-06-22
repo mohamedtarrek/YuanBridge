@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { nextAuthAuth } from '@/lib/auth/auth-options';
+import { getSessionFromCookieString } from '@/lib/auth';
 
 const LOCALE_COOKIE = 'yb_lang';
 
@@ -24,15 +24,15 @@ export async function proxy(request: NextRequest) {
   // Admin route protection
   const isAdminPage = /^\/(ar|en)\/admin/.test(pathname);
   if (isAdminPage) {
-    const session = await nextAuthAuth();
+    const session = await getSessionFromCookieString(request.cookies.get('session')?.value ?? null);
 
-    if (!session?.user) {
+    if (!session) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
+    if (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN') {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }

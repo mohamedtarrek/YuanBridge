@@ -15,8 +15,10 @@ const faqSchema = z.object({
 
 const faqUpdateSchema = faqSchema.partial()
 
-function checkAdmin(session: { user?: { id?: string; role?: string } } | null): boolean {
-  return !!(session?.user?.id && session.user.role === 'ADMIN')
+import type { SessionPayload } from '@/lib/auth'
+
+function checkAdmin(session: SessionPayload | null): boolean {
+  return !!(session?.sub && session.role === 'ADMIN')
 }
 
 export async function GET() {

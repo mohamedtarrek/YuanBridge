@@ -6,13 +6,13 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { LanguageSwitch } from '@/components/shared/LanguageSwitch';
 import { Button } from '@/components/ui/Button';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export function Navbar() {
   const { t, lang } = useLanguage();
-  const { data: session, status } = useSession();
+  const { session, status, logout } = useSession();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,10 +27,9 @@ export function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
+    await logout();
     toast.success(lang === 'ar' ? 'تم تسجيل الخروج' : 'Logged out');
     router.push(`/${lang}`);
-    router.refresh();
   };
 
   const links = [

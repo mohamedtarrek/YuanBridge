@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -22,12 +22,12 @@ export async function GET(request: NextRequest) {
 
     const [payments, total] = await Promise.all([
       prisma.payment.findMany({
-        where: { userId: session.user.id },
+        where: { userId: session.sub },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.payment.count({ where: { userId: session.user.id } }),
+      prisma.payment.count({ where: { userId: session.sub } }),
     ])
 
     return NextResponse.json({

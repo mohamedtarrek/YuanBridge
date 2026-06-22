@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         const paymentIntent = await stripe.paymentIntents.create({
           amount: Math.round(amount * 100),
           currency: currency.toLowerCase(),
-          metadata: { userId: session.user.id },
+          metadata: { userId: session.sub },
         })
 
         return NextResponse.json({
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     }
 
     if (provider === 'paypal') {
-      const paypalOrder = await createPayPalOrder(session.user.id)
+      const paypalOrder = await createPayPalOrder(session.sub)
       return NextResponse.json({
         success: true,
         orderId: paypalOrder.orderId,

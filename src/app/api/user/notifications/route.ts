@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
 
     const [notifications, total, unreadCount] = await Promise.all([
       prisma.notification.findMany({
-        where: { userId: session.user.id },
+        where: { userId: session.sub },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.notification.count({ where: { userId: session.user.id } }),
-      prisma.notification.count({ where: { userId: session.user.id, read: false } }),
+      prisma.notification.count({ where: { userId: session.sub } }),
+      prisma.notification.count({ where: { userId: session.sub, read: false } }),
     ])
 
     return NextResponse.json({
@@ -60,7 +60,7 @@ export async function PATCH(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -80,7 +80,7 @@ export async function PATCH(request: NextRequest) {
 
     if (all) {
       await prisma.notification.updateMany({
-        where: { userId: session.user.id, read: false },
+        where: { userId: session.sub, read: false },
         data: { read: true },
       })
       return NextResponse.json({
@@ -97,7 +97,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await prisma.notification.updateMany({
-      where: { id: notificationId, userId: session.user.id },
+      where: { id: notificationId, userId: session.sub },
       data: { read: true },
     })
 
@@ -120,7 +120,7 @@ export async function DELETE(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -133,7 +133,7 @@ export async function DELETE(request: NextRequest) {
 
     if (all === 'true') {
       await prisma.notification.deleteMany({
-        where: { userId: session.user.id },
+        where: { userId: session.sub },
       })
       return NextResponse.json({
         success: true,
@@ -149,7 +149,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.notification.deleteMany({
-      where: { id: notificationId, userId: session.user.id },
+      where: { id: notificationId, userId: session.sub },
     })
 
     return NextResponse.json({

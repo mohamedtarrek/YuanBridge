@@ -1,42 +1,38 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
-import { rateLimit, validateInput, registerSchema, sanitizeUser } from '@/lib/security'
+import { registerSchema } from '@/lib/auth'
+import { rateLimit, sanitizeUser } from '@/lib/security'
 
 export async function POST(request: Request) {
   try {
-    console.log('[REGISTER] Request received')
-
     const rateCheck = await rateLimit(5, 60_000)
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const body = await request.json()
-    const validation = validateInput(registerSchema, body)
-    if (!validation.success) {
-      console.log('[REGISTER] Validation failed:', validation.errors)
-      return NextResponse.json(
-        { success: false, errors: validation.errors },
-        { status: 400 }
-      )
+    const parsed = registerSchema.safeParse(body)
+    if (!parsed.success) {
+      const errors: Record<string, string[]> = {}
+      for (const issue of parsed.error.issues) {
+        const path = issue.path.join('.')
+        if (!errors[path]) errors[path] = []
+        errors[path].push(issue.message)
+      }
+      return NextResponse.json({ success: false, errors }, { status: 400 })
     }
 
-    const { name, email, password } = validation.data
-    console.log('[REGISTER] Validation passed for:', email)
+    const { name, email, password } = parsed.data
 
-    const existingUser = await prisma.user.findUnique({ where: { email } })
-    if (existingUser) {
-      console.log('[REGISTER] Email already exists:', email)
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
       return NextResponse.json(
         { success: false, message: 'An account with this email already exists.' },
         { status: 409 }
       )
     }
 
-    console.log('[REGISTER] Hashing password...')
     const hashedPassword = await bcrypt.hash(password, 12)
-    console.log('[REGISTER] Password hashed successfully')
 
-    console.log('[REGISTER] Creating user in database...')
     const user = await prisma.user.create({
       data: {
         name,
@@ -52,31 +48,15 @@ export async function POST(request: Request) {
         },
       },
     })
-    console.log('[REGISTER] User created successfully:', user.id)
-
-    // Verify the user was actually persisted
-    console.log('[REGISTER] Verifying user was persisted...')
-    const verified = await prisma.user.findUnique({ where: { email } })
-    if (!verified) {
-      console.error('[REGISTER] CRITICAL: User not found after create! Email:', email)
-      return NextResponse.json(
-        { success: false, message: 'Account creation failed - database write did not persist.' },
-        { status: 500 }
-      )
-    }
-    console.log('[REGISTER] User confirmed in database:', verified.id, verified.email, verified.role)
-
-    const safeUser = sanitizeUser(verified)
 
     return NextResponse.json(
-      { success: true, message: 'User registered successfully.', user: safeUser },
+      { success: true, message: 'Account created successfully.', user: sanitizeUser(user) },
       { status: 201 }
     )
   } catch (error) {
-    console.error('[REGISTER] ERROR:', error)
-    const message = error instanceof Error ? error.message : 'Internal server error.'
+    console.error('[REGISTER] Error:', error)
     return NextResponse.json(
-      { success: false, message, error: error instanceof Error ? error.stack : undefined },
+      { success: false, message: 'Internal server error.' },
       { status: 500 }
     )
   }

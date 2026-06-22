@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
             isActive: true,
             isPermanent: isPermanent !== false,
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            createdBy: session.user.id,
+            createdBy: session.sub,
           },
         },
       },
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'CREATE_ADMIN',
         targetId: admin.id,
         targetType: 'admin',

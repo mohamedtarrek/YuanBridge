@@ -14,7 +14,7 @@ export async function GET() {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     const saved = await prisma.savedStrategy.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session.sub },
       include: { strategy: true },
       orderBy: { createdAt: 'desc' },
     })
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const existing = await prisma.savedStrategy.findUnique({
-      where: { userId_strategyId: { userId: session.user.id, strategyId } },
+      where: { userId_strategyId: { userId: session.sub, strategyId } },
     })
     if (existing) {
       return NextResponse.json(
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     const saved = await prisma.savedStrategy.create({
       data: {
-        userId: session.user.id,
+        userId: session.sub,
         strategyId,
       },
       include: { strategy: true },
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -123,7 +123,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.savedStrategy.deleteMany({
-      where: { userId: session.user.id, strategyId },
+      where: { userId: session.sub, strategyId },
     })
 
     return NextResponse.json({ success: true, message: 'Unsaved strategy.' })

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
         { status: 403 }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         image: data.image || null,
         tags: data.tags || null,
         categoryId: data.categoryId || null,
-        createdById: session.user.id,
+        createdById: session.sub,
         summary: data.summary || null,
         summaryAr: data.summaryAr || null,
         trend: data.trend as any || null,
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'CREATE_STRATEGY',
         targetId: strategy.id,
         targetType: 'strategy',

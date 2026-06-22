@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     let existingSub = await prisma.subscription.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: session.sub },
     })
 
     if (existingSub && existingSub.status === 'ACTIVE' && existingSub.plan === 'PREMIUM') {
@@ -55,16 +55,16 @@ export async function POST(request: Request) {
     let subscription
 
     if (paymentMethod === 'stripe') {
-      const checkout = await createCheckoutSession('price_premium_monthly', session.user.id)
+      const checkout = await createCheckoutSession('price_premium_monthly', session.sub)
       subscription = await prisma.subscription.upsert({
-        where: { userId: session.user.id },
+        where: { userId: session.sub },
         update: {
           plan: 'PREMIUM',
           status: 'TRIALING',
           endsAt,
         },
         create: {
-          userId: session.user.id,
+          userId: session.sub,
           plan: 'PREMIUM',
           status: 'TRIALING',
           endsAt,
@@ -78,16 +78,16 @@ export async function POST(request: Request) {
       }, { status: 201 })
     }
 
-    const paypalOrder = await createPayPalOrder(session.user.id)
+    const paypalOrder = await createPayPalOrder(session.sub)
     subscription = await prisma.subscription.upsert({
-      where: { userId: session.user.id },
+      where: { userId: session.sub },
       update: {
         plan: 'PREMIUM',
         status: 'TRIALING',
         endsAt,
       },
       create: {
-        userId: session.user.id,
+        userId: session.sub,
         plan: 'PREMIUM',
         status: 'TRIALING',
         endsAt,

@@ -12,7 +12,7 @@ export async function GET(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -56,7 +56,7 @@ export async function PATCH(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -76,7 +76,7 @@ export async function PATCH(
 
     const updateData: Record<string, unknown> = {}
 
-    const isSuperAdmin = session.user.role === 'SUPER_ADMIN'
+    const isSuperAdmin = session.role === 'SUPER_ADMIN'
 
     if ('name' in body) updateData.name = body.name
     if ('nameAr' in body) updateData.nameAr = body.nameAr
@@ -114,7 +114,7 @@ export async function PATCH(
     if ('role' in updateData && isSuperAdmin) {
       await prisma.adminLog.create({
         data: {
-          adminId: session.user.id,
+          adminId: session.sub,
           action: 'CHANGE_USER_ROLE',
           targetId: id,
           targetType: 'user',
@@ -126,7 +126,7 @@ export async function PATCH(
     if ('isBanned' in updateData && isSuperAdmin) {
       await prisma.adminLog.create({
         data: {
-          adminId: session.user.id,
+          adminId: session.sub,
           action: body.isBanned ? 'BAN_USER' : 'UNBAN_USER',
           targetId: id,
           targetType: 'user',

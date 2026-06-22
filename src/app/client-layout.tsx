@@ -1,14 +1,14 @@
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '@/lib/auth/client';
 import { LanguageProvider } from '@/lib/i18n/LanguageContext';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <AuthProvider>
       <LanguageProvider>
         {children}
       </LanguageProvider>
-    </SessionProvider>
+    </AuthProvider>
   );
 }

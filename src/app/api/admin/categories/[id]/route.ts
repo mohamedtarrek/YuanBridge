@@ -12,7 +12,7 @@ export async function PATCH(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -53,7 +53,7 @@ export async function PATCH(
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'UPDATE_CATEGORY',
         targetId: id,
         targetType: 'category',
@@ -80,7 +80,7 @@ export async function DELETE(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -101,7 +101,7 @@ export async function DELETE(
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'DELETE_CATEGORY',
         targetId: id,
         targetType: 'category',

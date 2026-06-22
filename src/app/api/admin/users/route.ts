@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
         { status: 403 }
@@ -77,7 +77,7 @@ export async function DELETE(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    if (userId === session.user.id) {
+    if (userId === session.sub) {
       return NextResponse.json(
         { success: false, message: 'Cannot delete your own account.' },
         { status: 400 }
@@ -112,7 +112,7 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'DELETE_USER',
         targetId: userId,
         targetType: 'user',

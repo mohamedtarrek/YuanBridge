@@ -15,9 +15,9 @@ export async function GET(
     const { id } = await params
 
     let isPremiumUser = false
-    if (session?.user?.id) {
+    if (session?.sub) {
       const sub = await prisma.subscription.findUnique({
-        where: { userId: session.user.id },
+        where: { userId: session.sub },
         select: { plan: true, status: true },
       })
       isPremiumUser = sub?.plan === 'PREMIUM' && sub?.status === 'ACTIVE'

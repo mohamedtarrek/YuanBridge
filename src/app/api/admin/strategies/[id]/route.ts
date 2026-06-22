@@ -12,7 +12,7 @@ export async function GET(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.sub || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, message: 'Forbidden.' },
         { status: 403 }
@@ -55,7 +55,7 @@ export async function PATCH(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -131,7 +131,7 @@ export async function PATCH(
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: logAction as any,
         targetId: strategy.id,
         targetType: 'strategy',
@@ -158,7 +158,7 @@ export async function DELETE(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -179,7 +179,7 @@ export async function DELETE(
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'DELETE_STRATEGY',
         targetId: id,
         targetType: 'strategy',

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const subscription = await prisma.subscription.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: session.sub },
     })
 
     if (!subscription) {

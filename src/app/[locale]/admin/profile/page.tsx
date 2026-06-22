@@ -1,13 +1,13 @@
 'use client';
 
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/auth/client';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminProfilePage() {
   const { lang } = useLanguage();
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const [form, setForm] = useState({
     name: '',
@@ -19,7 +19,7 @@ export default function AdminProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-      setForm(prev => ({ ...prev, name: session.user.name || '' }));
+      setForm(prev => ({ ...prev, name: session.user?.name || '' }));
     }
   }, [session]);
 

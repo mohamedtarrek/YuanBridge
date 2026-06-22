@@ -12,7 +12,7 @@ export async function PATCH(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -30,7 +30,7 @@ export async function PATCH(
       )
     }
 
-    if (admin.role === 'SUPER_ADMIN' && id !== session.user.id) {
+    if (admin.role === 'SUPER_ADMIN' && id !== session.sub) {
       return NextResponse.json(
         { success: false, message: 'Cannot modify another Super Admin.' },
         { status: 403 }
@@ -45,7 +45,7 @@ export async function PATCH(
 
       await prisma.adminLog.create({
         data: {
-          adminId: session.user.id,
+          adminId: session.sub,
           action: 'CHANGE_USER_ROLE',
           targetId: id,
           targetType: 'admin',
@@ -66,7 +66,7 @@ export async function PATCH(
         create: {
           userId: id,
           ...profileData,
-          createdBy: session.user.id,
+          createdBy: session.sub,
         } as any,
       })
 
@@ -74,7 +74,7 @@ export async function PATCH(
         const action = body.isActive ? 'ACTIVATE_ADMIN' : 'SUSPEND_ADMIN'
         await prisma.adminLog.create({
           data: {
-            adminId: session.user.id,
+            adminId: session.sub,
             action,
             targetId: id,
             targetType: 'admin',
@@ -111,7 +111,7 @@ export async function DELETE(
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.sub || session.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Super Admin access required.' },
         { status: 403 }
@@ -120,7 +120,7 @@ export async function DELETE(
 
     const { id } = await params
 
-    if (id === session.user.id) {
+    if (id === session.sub) {
       return NextResponse.json(
         { success: false, message: 'Cannot delete your own account.' },
         { status: 400 }
@@ -137,7 +137,7 @@ export async function DELETE(
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.user.id,
+        adminId: session.sub,
         action: 'DELETE_ADMIN',
         targetId: id,
         targetType: 'admin',

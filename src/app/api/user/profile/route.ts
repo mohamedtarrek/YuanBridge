@@ -21,7 +21,7 @@ export async function GET() {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -29,7 +29,7 @@ export async function GET() {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: session.sub },
       include: { subscription: true },
     })
 
@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest) {
     if (rateCheck instanceof NextResponse) return rateCheck
 
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.sub) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized.' },
         { status: 401 }
@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const user = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: session.sub },
       data: data as any,
     })
 

@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { Button } from '@/components/ui/Button';
-import { signIn } from 'next-auth/react';
+import { useSession } from '@/lib/auth/client';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const { t, lang, dir } = useLanguage();
+  const { login } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
@@ -21,33 +22,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (!result || !result.ok || result.error) {
-        let message: string
-        if (result?.error === 'CredentialsSignin') {
-          message = 'Invalid email or password'
-        } else if (result?.error) {
-          message = result.error
-          console.error('[LOGIN] Server error:', result.error, 'status:', result.status)
-        } else {
-          message = 'Authentication failed'
-          console.error('[LOGIN] Unknown failure, full result:', JSON.stringify(result))
-        }
-        setError(message)
-        toast.error(message)
+      const result = await login(email, password)
+      if (!result.success) {
+        setError(result.error || 'Authentication failed')
+        toast.error(result.error || 'Authentication failed')
         return
       }
 
       toast.success('Welcome back!')
       window.location.href = `/${lang}/dashboard`
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Network error. Please try again.'
-      console.error('[LOGIN] Caught exception:', err)
+      const message = 'Network error. Please try again.'
       setError(message)
       toast.error(message)
     } finally {
